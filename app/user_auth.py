@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, status, Form
 from user_database import get_user
 from models import TokenData, User
 import os
+from typing import Generator
 from typing import Annotated
 from sqlalchemy.orm import Session
 from user_database import SessionLocal
@@ -17,7 +18,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-def get_database() -> Session:
+# Dependency to get the database session
+def get_database() -> Generator[Session, None, None]:
     # Provide a database session to use within the request
     db = SessionLocal()
     try:

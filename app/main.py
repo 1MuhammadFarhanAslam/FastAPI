@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from routers import admin, user, login
 from fastapi.middleware.cors import CORSMiddleware
-from uvicorn import run
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -15,6 +15,15 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(404)
+async def not_found_exception_handler(request, exc):
+    return JSONResponse(content={"error": "Welcome to the FastAPI."}, status_code=404)
+
+@app.exception_handler(405)
+async def method_not_allowed_exception_handler(request, exc):
+    return JSONResponse(content={"error": "Custom 405 Method Not Allowed message"}, status_code=405)
+
+
 # routers are imported here
 app.include_router(login.router, prefix="", tags=["Authentication"])
 app.include_router(admin.router, prefix="", tags=["Admin"])
@@ -22,10 +31,8 @@ app.include_router(user.router, prefix="", tags=["User"])
 
 
 
-if __name__ == "__main__":
-    # Print the URL where the application is running
-    print("Starting FastAPI server...")
-    run(app, host="127.0.0.1", port=8000)
+
+
 
 
 

@@ -1,19 +1,17 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 import os
 from models import User, Role  # Import correct classes
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import IntegrityError
 from hashing import hash_password, verify_hash
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timedelta
-from typing import Dict, Union
-from sqlalchemy.sql import text
+from typing import  Union
+from typing import Generator
 
 # Get the database URL from the environment variable
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -35,7 +33,7 @@ def initialize_database():
     Role.metadata.create_all(bind=engine)
     print("Database initialized successfully.")
 
-def get_database() -> Session:
+def get_database() -> Generator[Session, None, None]:
     # Provide a database session to use within the request
     db = SessionLocal()
     try:

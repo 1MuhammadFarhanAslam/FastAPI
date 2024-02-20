@@ -13,6 +13,7 @@ from typing import Union, Optional
 from hashing import hash_password, verify_hash
 import logging
 from sqlalchemy.ext.declarative import declarative_base
+from typing import Generator
 
 
 # Get the database URL from the environment variable
@@ -34,7 +35,8 @@ def initialize_database():
 
 
 # Dependency to get the database session
-def get_database() -> Session:
+def get_database() -> Generator[Session, None, None]:
+    # Provide a database session to use within the request
     db = SessionLocal()
     try:
         yield db
