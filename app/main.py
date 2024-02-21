@@ -15,15 +15,6 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(404)
-async def not_found_exception_handler(request, exc):
-    return JSONResponse(content={"error": "Welcome to the FastAPI."}, status_code=404)
-
-@app.exception_handler(405)
-async def method_not_allowed_exception_handler(request, exc):
-    return JSONResponse(content={"error": "Custom 405 Method Not Allowed message"}, status_code=405)
-
-
 # routers are imported here
 app.include_router(login.router, prefix="", tags=["Authentication"])
 app.include_router(admin.router, prefix="", tags=["Admin"])
