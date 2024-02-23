@@ -1,11 +1,11 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Form
-from user_database import get_user, verify_user_credentials, update_user_password
+from ..user_database import get_user, verify_user_credentials, update_user_password
 import logging
 from fastapi import Depends
 from datetime import datetime
-from models import User, User
-from user_auth import get_current_active_user
+from ..models import User, User
+from ..user_auth import get_current_active_user
 import re
 from fastapi.encoders import jsonable_encoder
 
