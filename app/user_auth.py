@@ -3,13 +3,12 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status, Form
-from user_database import get_user
-from models import TokenData, User
+from .user_database import get_user
+from .models import TokenData, User
 import os
-from typing import Generator
-from typing import Annotated
+from typing import Generator, Annotated
 from sqlalchemy.orm import Session
-from user_database import SessionLocal
+from .user_database import SessionLocal
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = "HS256"
