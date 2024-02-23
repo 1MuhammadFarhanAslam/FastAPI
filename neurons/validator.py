@@ -75,6 +75,62 @@
 
 import os
 import sys
+import asyncio
+
+# Set the project root path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Set the 'AudioSubnet' directory path
+sys.path.insert(0, project_root)
+
+from classes.tts import TextToSpeechService 
+from classes.vc import VoiceCloningService
+from classes.ttm import MusicGenerationService
+
+# Check if the 'app' folder exists
+if os.path.exists(os.path.join(project_root, 'app')):
+    from app.fastapi_server import create_app
+
+async def main():
+    services = [
+        MusicGenerationService(),
+        TextToSpeechService(),
+        VoiceCloningService(),
+    ]
+
+    # Initialize an empty list to hold our tasks
+    tasks = []
+
+    # Iterate through each service and create an asynchronous task for its run_async method
+    for service in services:
+        if isinstance(service, TextToSpeechService):
+            service.new_wandb_run()  # Initialize the Weights & Biases run if the service is TextToSpeechService
+        task = asyncio.create_task(service.run_async())
+        tasks.append(task)
+
+        await asyncio.sleep(0.1)  # Short delay between task initializations if needed
+
+    # If the 'app' folder exists, create and run the FastAPI app
+    if os.path.exists(os.path.join(project_root, 'app')):
+        app = create_app()
+        fastapi_task = asyncio.create_task(app.run())
+
+        # Wait for all tasks to complete, prioritizing the FastAPI task
+        await asyncio.gather(fastapi_task, *tasks)
+    else:
+        # If the 'app' folder does not exist, continue running other tasks normally
+        await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
+
+
+
+
+import os
+import sys
 import uvicorn
 import asyncio
 import requests
@@ -127,7 +183,7 @@ class FastAPIServer:
         await server.serve()
 
 
-        
+
 import asyncio
 from classes.tts import TextToSpeechService, AIModelService
 from classes.vc import VoiceCloningService
@@ -154,10 +210,4 @@ async def main():
 
 if _name_ == "_main_":
     asyncio.run(main())
-
-
-
-
-
-
 
