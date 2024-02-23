@@ -9,10 +9,10 @@ def create_app():
     # Set the project root path
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-    # Add the 'app' directory to the Python path
+    # Add the project root directory to the Python path
     sys.path.insert(0, project_root)
 
-    # Import routers inside the function to avoid circular imports
+    # Import routers from the 'routers' package using relative imports
     from routers import admin, user, login
 
     # Create FastAPI application object
