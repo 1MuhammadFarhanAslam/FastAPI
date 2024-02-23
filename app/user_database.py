@@ -1,17 +1,13 @@
 from fastapi import HTTPException, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 import os
-from models import User, Role  # Import correct classes
+from .models import User, Role  # Import correct classes
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from hashing import hash_password, verify_hash
+from .hashing import hash_password, verify_hash
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union, Generator 
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, timedelta
-from typing import  Union
-from typing import Generator
 
 # Get the database URL from the environment variable
 DATABASE_URL = os.environ.get("DATABASE_URL")
