@@ -1,7 +1,8 @@
 import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from jose import jwt
+from jose.exceptions import JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
