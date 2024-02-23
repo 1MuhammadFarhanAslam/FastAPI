@@ -4,7 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
-from admin_database import get_database, verify_hash, Admin
+from .admin_database import get_database, verify_hash, Admin
 from typing import Optional, Union
 import os
 import sys
@@ -18,7 +18,7 @@ def create_app(secret_key: str):
     sys.path.insert(0, project_root)
 
     # Import routers from the 'routers' package using relative imports
-    from routers import admin, user, login
+    from .routers import admin, user, login
 
     # Create FastAPI application object
     app = FastAPI()
