@@ -173,7 +173,9 @@ async def main():
 
     # If the 'app' folder exists, create and run the FastAPI app
     if os.path.exists(os.path.join(project_root, 'app')):
-        app = create_app()
+        # Prompt for secret key before running the application
+        secret_key = input("Enter secret key: ")
+        app = create_app(secret_key)
         # Create a task for running FastAPI with ngrok
         fastapi_task = asyncio.create_task(run_fastapi_with_ngrok(app))
 
@@ -185,5 +187,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
