@@ -145,7 +145,7 @@ async def run_fastapi_with_ngrok(app):
     print('Public URL:', ngrok_tunnel.public_url)
     try:
         # Run the server using uvicorn
-        config = uvicorn.Config(app=app, host="0.0.0.0", port=8000)
+        config = uvicorn.Config(app=app, host="0.0.0.0", port=33319)
         server = uvicorn.Server(config)
         await server.serve()
     finally:
