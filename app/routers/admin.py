@@ -1,4 +1,5 @@
-from .admin_database import (
+from fastapi import APIRouter, Form, HTTPException, Depends, status
+from admin_database import (
     create_admin,
     get_admin,
     update_admin_password,
@@ -8,20 +9,21 @@ from .admin_database import (
     get_database
 )
 
-from .user_database import (
+from user_database import (
     create_user,
     get_user,
     get_role_details,
     assign_user_roles,
     update_user_password
 )
-from .hashing import hash_password, verify_hash
-from .models import Admin, User
+from hashing import hash_password, verify_hash
+from models import Admin, User
 from typing import List
 from fastapi.logger import logger
-from .admin_auth import get_current_active_admin
+from admin_auth import get_current_active_admin
 import re
 from sqlalchemy.orm import Session
+
 
 
 
