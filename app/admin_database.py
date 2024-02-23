@@ -2,7 +2,7 @@ from fastapi import HTTPException , Depends
 from .hashing import hash_password, verify_hash
 import re
 import os
-from models import Admin, SecretKey, AdminInfo
+from .models import Admin, SecretKey, AdminInfo
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,7 +10,6 @@ from typing import Union, List
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from typing import Union, Optional
-from hashing import hash_password, verify_hash
 import logging
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Generator
