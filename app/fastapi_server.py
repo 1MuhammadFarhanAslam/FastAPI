@@ -1,10 +1,12 @@
 import asyncio
 from fastapi import FastAPI
-from routers import admin, user, login
 from fastapi.middleware.cors import CORSMiddleware
 
 # Define a function to create the FastAPI application
 def create_app():
+    # Import routers inside the function
+    from routers import admin, user, login
+
     # Create FastAPI application object
     app = FastAPI()
 
@@ -26,3 +28,6 @@ def create_app():
 
 # Call create_app() to obtain the FastAPI application instance
 app = create_app()
+
+
+
