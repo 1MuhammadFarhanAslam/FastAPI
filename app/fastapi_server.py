@@ -13,7 +13,7 @@ def create_app():
     sys.path.insert(0, project_root)
 
     # Import routers from the 'routers' package using relative imports
-    from routers import admin, user, login
+    from .routers import admin, user, login
 
     # Create FastAPI application object
     app = FastAPI()
