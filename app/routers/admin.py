@@ -9,7 +9,7 @@ from ..admin_database import (
 
 from ..user_database import create_user , get_user, get_role_details, assign_user_roles, update_user_password
 from ..hashing import hash_password, verify_hash
-from models import Admin , User
+from ..models import Admin , User
 from typing import List
 from fastapi.logger import logger
 from ..admin_auth import get_current_active_admin
