@@ -1,14 +1,12 @@
 import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
-from jose.exceptions import JWTError
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from models import TokenData, Admin
-from admin_database import get_admin
-import psycopg2
+from .models import TokenData, Admin
+from .admin_database import get_admin
 
 SECRET_KEY = os.environ.get("ADMIN_SECRET_KEY")
 ALGORITHM = "HS256"

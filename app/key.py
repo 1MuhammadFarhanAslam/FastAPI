@@ -19,8 +19,3 @@ secret_key = bcrypt_hash.decode()[:64]
 
 print("Bcrypt Secret Key:", secret_key)
 ####################################################################################################################
-
-
-# pgadmin user password set DATABASE_URL=postgresql://postgres:WpFYyE0GjCCIey5soRST6Oh45TDCusvMvt6Bm3vdRwxIYm3y8OhuK@localhost:5432/admin_database_pg
-
-# admin secret key: $2b$12$zVz1pCAaCYgFwdExvKJKZu7FFioHaV58/RPHWXSTTLmrRLXOzfOby
