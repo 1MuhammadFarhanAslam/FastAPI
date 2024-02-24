@@ -174,9 +174,9 @@ async def main():
     # If the 'app' folder exists, create and run the FastAPI app
     if os.path.exists(os.path.join(project_root, 'app')):
         # Read secret key from environment variable
-        secret_key = os.getenv("SECRET_KEY")
+        secret_key = os.getenv("LOGIN_SECRET_KEY")
         if not secret_key:
-            raise ValueError("Secret key not found in environment variable SECRET_KEY")
+            raise ValueError("Login Secret key not found in environment variable LOGIN_SECRET_KEY")
         app = create_app(secret_key)
         # Create a task for running FastAPI with ngrok
         fastapi_task = asyncio.create_task(run_fastapi_with_ngrok(app))
