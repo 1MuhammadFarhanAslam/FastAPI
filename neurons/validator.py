@@ -135,9 +135,12 @@ from classes.tts import TextToSpeechService
 from classes.vc import VoiceCloningService
 from classes.ttm import MusicGenerationService
 
-# Check if the 'app' folder exists
-if os.path.exists(os.path.join(project_root, 'app')):
-    from app.fastapi_server import create_app
+try:
+    # Check if the 'app' folder exists
+    if os.path.exists(os.path.join(project_root, 'app')):
+        from app.fastapi_server import create_app
+except Exception as e:
+    print(f"An error occurred while loading the app folder: {e}")
 
 async def run_fastapi_with_ngrok(app):
     # Setup ngrok tunnel
@@ -148,6 +151,8 @@ async def run_fastapi_with_ngrok(app):
         config = uvicorn.Config(app=app, host="0.0.0.0", port=33319)
         server = uvicorn.Server(config)
         await server.serve()
+    except Exception as e:
+        print(f"An error occurred while loading uvicorn server: {e}")
     finally:
         # Close ngrok tunnel when server exits
         ngrok_tunnel.close()
@@ -175,11 +180,14 @@ async def main():
     if os.path.exists(os.path.join(project_root, 'app')):
         # Read secret key from environment variable
         secret_key = os.getenv("LOGIN_SECRET_KEY")
-        if not secret_key:
-            raise ValueError("Login Secret key not found in environment variable LOGIN_SECRET_KEY")
-        app = create_app(secret_key)
-        # Create a task for running FastAPI with ngrok
-        fastapi_task = asyncio.create_task(run_fastapi_with_ngrok(app))
+        try:
+            if not secret_key:
+                raise ValueError("Login Secret key not found in environment variable LOGIN_SECRET_KEY")
+            app = create_app(secret_key)
+            # Create a task for running FastAPI with ngrok
+            fastapi_task = asyncio.create_task(run_fastapi_with_ngrok(app))
+        except ValueError as e:
+            print(f"An error occurred because fastapi_task is not initialising: {e}")
 
         # Wait for all tasks to complete, prioritizing the FastAPI task
         await asyncio.gather(fastapi_task, *tasks)
