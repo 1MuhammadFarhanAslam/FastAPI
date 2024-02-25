@@ -83,7 +83,7 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
     print("User details:", user_dict)
     if user.roles:
         role = user.roles[0]
-        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tt_enabled == 1:
+        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
 
             # Choose a TTS axon randomly
             axon = np.random.choice(tts_api.get_filtered_axons())
