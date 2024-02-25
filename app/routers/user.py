@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from ..end_points.tts_api import TTS_API
 
 router = APIRouter()
+tts_api = TTS_API()
 
 
 # Define a Pydantic model for the request body
@@ -80,17 +81,16 @@ async def change_user_password(
 def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     # Make sure the user is active
     # Create an instance of TTS_API
-    tts_api = TTS_API()
     # Choose a TTS axon randomly
     axon = np.random.choice(tts_api.get_filtered_axons())
     
     # Now, use the prompt from the request in the query_network function
     # Replace 'query_network' and 'axon' with your actual function and variable names
-    response = TTS_API.query_network(axon, request.prompt)  # Modify this line based on your actual function's signature
+    response = tts_api.query_network(axon, request.prompt)  # Modify this line based on your actual function's signature
 
-    _ = TTS_API.process_response(axon,response, request.prompt)
+    _ = tts_api.process_response(axon,response, request.prompt)
     
-    return TTS_API.output_path
+    return tts_api.output_path
 
 
 
