@@ -79,9 +79,7 @@ async def change_user_password(
 @router.post("/tts_service/")
 def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     # Make sure the user is active
-    if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    
+
     # Choose a TTS axon randomly
     axon = np.random.choice(TTS_API.get_filtered_axons())
     
