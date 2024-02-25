@@ -1,16 +1,26 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Form
 from ..user_database import get_user, verify_user_credentials, update_user_password
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+import numpy as np
 import logging
 from fastapi import Depends
 from datetime import datetime
 from ..models import User, User
 from ..user_auth import get_current_active_user
 import re
+import numpy as np
 from fastapi.encoders import jsonable_encoder
+from end_points.tts_api import TTS_API
 
 router = APIRouter()
 
+
+# Define a Pydantic model for the request body
+class TTSRequest(BaseModel):
+    prompt: str  # The prompt string that will be converted to speech
 
 @router.post("/change_password", response_model=dict)
 async def change_user_password(
@@ -65,21 +75,26 @@ async def change_user_password(
 ##########################################################################################################################
 
 # Endpoint for tts_service
-@router.get("/tts_service")
-def tts_service(user: User = Depends(get_current_active_user)):
-    user_dict = jsonable_encoder(user)  # Convert User object to a dictionary
-    print("User details:", user_dict)   # Print the dictionary
-    if user.roles:
-        role = user.roles[0]
-        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-            print("Congratulations! You have access to Text-to-Speech (TTS) service.")
-            return {"message": f"{user.username}! Welcome to the Text-to-Speech service, enjoy your experience!"}
-        else:
-            print("You do not have access to Text-to-Speech service or subscription is expired.")
-            raise HTTPException(status_code=403, detail="Your subscription have expired or you does not have any access to Text-to-Speech service")
-    else:
-        print("User does not have any roles assigned.")
-        raise HTTPException(status_code=403, detail="User does not have any roles assigned")
+# Modify the endpoint to accept POST requests and use the TTSRequest model
+@router.post("/tts_service/")
+def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+    # Make sure the user is active
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    
+    # Choose a TTS axon randomly
+    axon = np.random.choice(TTS_API.get_filtered_axons())
+    
+    # Now, use the prompt from the request in the query_network function
+    # Replace 'query_network' and 'axon' with your actual function and variable names
+    response = TTS_API.query_network(axon, request.prompt)  # Modify this line based on your actual function's signature
+
+    _ = TTS_API.process_response(axon,response, request.prompt)
+    
+    return TTS_API.output_path
+
+
+
 
 
 # Endpoint for ttm_service

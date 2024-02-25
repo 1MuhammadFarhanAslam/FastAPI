@@ -40,6 +40,7 @@ class TextToSpeechService(AIModelService):
         self.last_run_start_time = dt.datetime.now()
         self.tao = self.metagraph.neurons[self.uid].stake.tao
         self.combinations = []
+        self.output_path = ''
         
         ###################################### DIRECTORY STRUCTURE ###########################################
         self.tts_source_dir = os.path.join(audio_subnet_path, "tts_source")
@@ -237,9 +238,9 @@ class TextToSpeechService(AIModelService):
 
             # Save the audio data as a .wav file
             if self.islocaltts:
-                output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
+                self.output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
             else:
-                output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
+                self.output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
             
             # Check if any WAV file with .wav extension exists and delete it
             existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
@@ -256,11 +257,11 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 44000
             else:
                 sampling_rate = 16000
-            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
-            print(f"Saved audio file to {output_path}")
+            torchaudio.save(self.output_path, src=audio_data_int, sample_rate=sampling_rate)
+            print(f"Saved audio file to {self.output_path}")
 
             # Score the output and update the weights
-            score = self.score_output(output_path, prompt)
+            score = self.score_output(self.output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
             self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
 
