@@ -13,7 +13,7 @@ from ..user_auth import get_current_active_user
 import re
 import numpy as np
 from fastapi.encoders import jsonable_encoder
-from end_points.tts_api import TTS_API
+from ..end_points.tts_api import TTS_API
 
 router = APIRouter()
 
