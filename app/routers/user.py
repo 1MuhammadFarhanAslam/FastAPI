@@ -79,20 +79,30 @@ async def change_user_password(
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 @router.post("/tts_service/")
 def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
-    # Make sure the user is active
-    # Create an instance of TTS_API
-    # Choose a TTS axon randomly
-    axon = np.random.choice(tts_api.get_filtered_axons())
-    
-    # Now, use the prompt from the request in the query_network function
-    # Replace 'query_network' and 'axon' with your actual function and variable names
-    response = tts_api.query_network(axon, request.prompt)  # Modify this line based on your actual function's signature
+    user_dict = jsonable_encoder(user)
+    print("User details:", user_dict)
+    if user.roles:
+        role = user.roles[0]
+        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tt_enabled == 1:
 
-    _ = tts_api.process_response(axon,response, request.prompt)
-    
-    return tts_api.output_path
+            # Choose a TTS axon randomly
+            axon = np.random.choice(tts_api.get_filtered_axons())
 
+            # Use the prompt from the request in the query_network function
+            response = tts_api.query_network(axon, request.prompt)
 
+            # Process the response
+            tts_api.process_response(axon, response, request.prompt)
+
+            # Return the output path
+            return tts_api.output_path
+
+        else:
+            # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
+            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
+    else:
+        # If the user doesn't have any roles assigned, raise 403 Forbidden
+        raise HTTPException(status_code=403, detail="You do not have any roles assigned")
 
 
 
@@ -112,6 +122,7 @@ def ttm_service(user: User = Depends(get_current_active_user)):
     else:
         print("You do not have any roles assigned.")
         raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
+    
 
 @router.get("/vc_service")
 def vc_service(user: User = Depends(get_current_active_user)):
