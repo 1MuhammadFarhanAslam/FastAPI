@@ -85,8 +85,15 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
 
+            # Get filtered axons
+            filtered_axons = tts_api.get_filtered_axons()
+
+            # Check if there are axons available
+            if not filtered_axons:
+                raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech")
+
             # Choose a TTS axon randomly
-            axon = np.random.choice(tts_api.get_filtered_axons())
+            axon = np.random.choice(filtered_axons)
 
             # Use the prompt from the request in the query_network function
             response = tts_api.query_network(axon, request.prompt)
@@ -103,6 +110,7 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
 
 
 
