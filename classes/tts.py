@@ -29,7 +29,7 @@ class TextToSpeechService(AIModelService):
     def __init__(self):
         super().__init__()  # Initializes base class components
         self.load_prompts()
-        self.total_dendrites_per_query = 1
+        self.total_dendrites_per_query = 10
         self.minimum_dendrites_per_query = 3  # Example value, adjust as needed
         self.current_block = self.subtensor.block
         self.filtered_axon = []
@@ -40,7 +40,6 @@ class TextToSpeechService(AIModelService):
         self.last_run_start_time = dt.datetime.now()
         self.tao = self.metagraph.neurons[self.uid].stake.tao
         self.combinations = []
-        self.output_path = ''
         
         ###################################### DIRECTORY STRUCTURE ###########################################
         self.tts_source_dir = os.path.join(audio_subnet_path, "tts_source")
@@ -110,7 +109,7 @@ class TextToSpeechService(AIModelService):
                 await self.main_loop_logic(step)
                 step += 1
                 await asyncio.sleep(0.5)  # Adjust the sleep time as needed
-                if step % 50 == 0 and self.config.auto_update == 'no':
+                if step % 50 == 0 and self.config.auto_update == 'yes':
                     lib.utils.try_update()
             except KeyboardInterrupt:
                 print("Keyboard interrupt detected. Exiting TextToSpeechService.")
@@ -121,7 +120,7 @@ class TextToSpeechService(AIModelService):
 
     async def main_loop_logic(self, step):
         # Sync and update weights logic
-        if step % 5 == 0:
+        if step % 10 == 0:
             self.metagraph.sync(subtensor=self.subtensor)
             bt.logging.info(f"🔄 Syncing metagraph with subtensor.")
         
@@ -155,7 +154,7 @@ class TextToSpeechService(AIModelService):
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
                     self.last_reset_weights_block = self.current_block        
                     # set all nodes without ips set to 0
-                    scores = scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
+                    self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
             self.islocaltts = False
         else:
             bt.logging.trace("No prompts found or wrong file name was given. Using Huggingface Dataset for prompts.")
@@ -175,10 +174,11 @@ class TextToSpeechService(AIModelService):
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
                     self.last_reset_weights_block = self.current_block        
                     # set all nodes without ips set to 0
-                    scores = scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
+                    self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
 
-
-    def query_network(self, filtered_axons, prompt):
+    def query_network(self,filtered_axons, prompt):
+        # Network querying logic
+        
         responses = self.dendrite.query(
             filtered_axons,
             lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
@@ -186,7 +186,6 @@ class TextToSpeechService(AIModelService):
             timeout=60,
         )
         return responses
-
     
     def update_block(self):
         self.current_block = self.subtensor.block
@@ -206,7 +205,7 @@ class TextToSpeechService(AIModelService):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech):
                 self.process_response(axon, response, prompt)
         
-        bt.logging.info(f"Scores: {self.scores}")
+        bt.logging.info(f"Scores after update in TTS: {self.scores}")
         self.update_block()
 
 
@@ -238,9 +237,9 @@ class TextToSpeechService(AIModelService):
 
             # Save the audio data as a .wav file
             if self.islocaltts:
-                self.output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
+                output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
             else:
-                self.output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
+                output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
             
             # Check if any WAV file with .wav extension exists and delete it
             existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
@@ -257,11 +256,11 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 44000
             else:
                 sampling_rate = 16000
-            torchaudio.save(self.output_path, src=audio_data_int, sample_rate=sampling_rate)
-            print(f"Saved audio file to {self.output_path}")
+            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+            print(f"Saved audio file to {output_path}")
 
             # Score the output and update the weights
-            score = self.score_output(self.output_path, prompt)
+            score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
             self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
 
@@ -349,11 +348,6 @@ class TextToSpeechService(AIModelService):
         return self.combinations
     
     def update_weights(self, scores):
-        # # Calculate new weights from scores
-        # if torch.isnan(scores).all():
-        #     bt.logging.trace("All scores are nan, setting all weights to 0")
-        #     scores = torch.zeros_like(scores)
-
         # Process scores for blacklisted miners
         for idx, uid in enumerate(self.metagraph.uids):
             neuron = self.metagraph.neurons[uid]
@@ -362,28 +356,34 @@ class TextToSpeechService(AIModelService):
                 bt.logging.info(f"Blacklisted miner detected: {uid}. Score set to 0.")
 
         # Normalize scores to get weights
-        weights = scores / torch.sum(scores)
+        weights = torch.nn.functional.normalize(scores, p=1, dim=0)
         bt.logging.info(f"Setting weights: {weights}")
 
         # Process weights for the subnet
-        processed_uids, processed_weights = bt.utils.weight_utils.process_weights_for_netuid(
-            uids=self.metagraph.uids,
-            weights=weights,
-            netuid=self.config.netuid,
-            subtensor=self.subtensor
-        )
-        bt.logging.info(f"Processed weights: {processed_weights}")
-        bt.logging.info(f"Processed uids: {processed_uids}")
+        try:
+            processed_uids, processed_weights = bt.utils.weight_utils.process_weights_for_netuid(
+                uids=self.metagraph.uids,
+                weights=weights,
+                netuid=self.config.netuid,
+                subtensor=self.subtensor
+            )
+            bt.logging.info(f"Processed weights: {processed_weights}")
+            bt.logging.info(f"Processed uids: {processed_uids}")
+        except Exception as e:
+            bt.logging.error(f"An error occurred While processing the weights: {e}")
 
-        # Set weights on the Bittensor network
-        result = self.subtensor.set_weights(
-            netuid=self.config.netuid,  # Subnet to set weights on
-            wallet=self.wallet,         # Wallet to sign set weights using hotkey
-            uids=processed_uids,        # Uids of the miners to set weights for
-            weights=processed_weights   # Weights to set for the miners
-        )
+        try:
+            # Set weights on the Bittensor network
+            result = self.subtensor.set_weights(
+                netuid=self.config.netuid,  # Subnet to set weights on
+                wallet=self.wallet,         # Wallet to sign set weights using hotkey
+                uids=processed_uids,        # Uids of the miners to set weights for
+                weights=processed_weights   # Weights to set for the miners
+            )
 
-        if result:
-            bt.logging.success('Successfully set weights.')
-        else:
-            bt.logging.error('Failed to set weights.')
+            if result:
+                bt.logging.success('Successfully set weights.')
+            else:
+                bt.logging.error('Failed to set weights.')
+        except Exception as e:
+            bt.logging.error(f"An error occurred while setting weights: {e}")
