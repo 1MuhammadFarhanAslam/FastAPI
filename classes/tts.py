@@ -210,19 +210,19 @@ class TextToSpeechService(AIModelService):
 
 
     def process_response(self, axon, response, prompt):
-        try:
-            speech_output = response.speech_output
-            if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
-                bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
-                self.handle_speech_output(axon, speech_output, prompt, response.model_name)
-                bt.logging.info(f"Scores after update in TTS: {self.scores}")
-            elif response.dendrite.status_code != 403:
-                self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
-                bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
-            else:
-                pass
-        except Exception as e:
-            bt.logging.error(f'An error occurred while handling speech output: {e}')
+            try:
+                if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
+                    bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
+                    speech_output = response.speech_output
+                    self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                    bt.logging.info(f"Scores after update in TTS: {self.scores}")
+                elif response is not None and response.dendrite.status_code != 403:
+                    self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
+                    bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
+                else:
+                    pass
+            except Exception as e:
+                bt.logging.error(f'An error occurred while handling speech output: {e}')
 
     def handle_speech_output(self, axon, speech_output, prompt, model_name):
         try:

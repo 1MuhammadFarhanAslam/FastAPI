@@ -14,6 +14,8 @@ import re
 import numpy as np
 from fastapi.encoders import jsonable_encoder
 from ..end_points.tts_api import TTS_API
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -78,7 +80,7 @@ async def change_user_password(
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 @router.post("/tts_service/")
-def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
@@ -96,13 +98,15 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
             axon = np.random.choice(filtered_axons)
 
             # Use the prompt from the request in the query_network function
-            response = tts_api.query_network(axon, request.prompt)
+            response = await tts_api.query_network(axon, request.prompt)
 
             # Process the response
             tts_api.process_response(axon, response, request.prompt)
 
-            # Return the output path
-            return tts_api.output_path
+            # Return the TTS output
+            with open(tts_api.output_path, 'rb') as file:
+                audio_data = file.read()
+                return StreamingResponse(BytesIO(audio_data), media_type="audio/wav")
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
