@@ -54,7 +54,7 @@ class TTS_API(TextToSpeechService):
             bt.logging.debug(f"Filtered uids in fastapi: {filtered_uids}")
             filtered_zipped_uid = list(filter(lambda x: x[1], zipped_uid))
             filtered_uid = [item[0] for item in filtered_zipped_uid] if filtered_zipped_uid else []
-            self.filtered_axon = filtered_uid
+            self.filtered_axon = filtered_uids
             bt.logging.info(f"Filtered axons in fastapi: {self.filtered_axon}")
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
