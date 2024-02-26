@@ -36,17 +36,22 @@ class TTS_API(TextToSpeechService):
                 dendrites_per_query = int(active_miners / 3)
             else:
                 dendrites_per_query = self.total_dendrites_per_query
+            bt.logging.debug(f"Dendrites per query in fastapi: {dendrites_per_query}")
         except Exception as e:
             print(f"An error occurred while dendrites per query calculation in fastapi : {e}")        
         # less than 3 set to 3
         try:
             if dendrites_per_query < self.minimum_dendrites_per_query:
                 dendrites_per_query = self.minimum_dendrites_per_query
+            bt.logging.debug(f"Dendrites per query in fastapi 2nd time: {dendrites_per_query}")
             # zip uids and queryable_uids, filter only the uids that are queryable, unzip, and get the uids
             zipped_uids = list(zip(uids, queryable_uids))
+            bt.logging.debug(f"Zipped uids in fastapi: {zipped_uids}")
             zipped_uid = list(zip(uids, queryable_uid))
+            bt.logging.debug(f"Zipped uid in fastapi: {zipped_uid}")
             filtered_zipped_uids = list(filter(lambda x: x[1], zipped_uids))
             filtered_uids = [item[0] for item in filtered_zipped_uids] if filtered_zipped_uids else []
+            bt.logging.debug(f"Filtered uids in fastapi: {filtered_uids}")
             filtered_zipped_uid = list(filter(lambda x: x[1], zipped_uid))
             filtered_uid = [item[0] for item in filtered_zipped_uid] if filtered_zipped_uid else []
             self.filtered_axon = filtered_uid
