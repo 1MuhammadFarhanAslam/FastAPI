@@ -177,16 +177,16 @@ class TextToSpeechService(AIModelService):
                     # set all nodes without ips set to 0
                     scores = scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
 
-    def query_network(self,filtered_axons, prompt):
-        # Network querying logic
-        
-        responses = self.dendrite.query(
+                    
+    async def query_network(self, filtered_axons, prompt):
+        responses = await self.dendrite.query(
             filtered_axons,
             lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
             deserialize=True,
             timeout=60,
         )
         return responses
+
     
     def update_block(self):
         self.current_block = self.subtensor.block
