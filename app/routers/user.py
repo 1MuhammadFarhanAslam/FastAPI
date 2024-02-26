@@ -16,6 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from ..end_points.tts_api import TTS_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
+import bittensor as bt
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -89,6 +90,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
@@ -96,16 +98,20 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
             # Choose a TTS axon randomly
             axon = np.random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}")
 
             # Use the prompt from the request in the query_network function
             response = await tts_api.query_network(axon, request.prompt)
+            bt.logging.info(f"TTS response: {response}")
 
             # Process the response
             tts_api.process_response(axon, response, request.prompt)
+            bt.logging.info(f"TTS output path: {tts_api.output_path}")
 
             # Return the TTS output
             with open(tts_api.output_path, 'rb') as file:
                 audio_data = file.read()
+                bt.logging.info(f"TTS audio data: {audio_data}")
                 return StreamingResponse(BytesIO(audio_data), media_type="audio/wav")
 
         else:
