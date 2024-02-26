@@ -77,8 +77,10 @@ async def change_user_password(
 
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
+import asyncio
+
 @router.post("/tts_service/")
-def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
@@ -96,13 +98,17 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
             axon = np.random.choice(filtered_axons)
 
             # Use the prompt from the request in the query_network function
-            response = tts_api.query_network(axon, request.prompt)
+            try:
+                # Wrap the query_network call in asyncio.wait_for with a timeout of 150 seconds
+                response = await asyncio.wait_for(tts_api.query_network(axon, request.prompt), timeout=150)
 
-            # Process the response
-            tts_api.process_response(axon, response, request.prompt)
+                # Process the response
+                tts_api.process_response(axon, response, request.prompt)
 
-            # Return the output path
-            return tts_api.output_path
+                # Return the output path
+                return tts_api.output_path
+            except asyncio.TimeoutError:
+                raise HTTPException(status_code=500, detail="Request timed out")
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
@@ -110,6 +116,7 @@ def tts_service(request: TTSRequest, user: User = Depends(get_current_active_use
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
 
 
 
