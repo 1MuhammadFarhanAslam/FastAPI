@@ -215,8 +215,10 @@ class TextToSpeechService(AIModelService):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
                 self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                bt.logging.info(f"Scores after update in TTS: {self.scores}")
             elif response.dendrite.status_code != 403:
                 self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
+                bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
             else:
                 pass
         except Exception as e:
@@ -226,23 +228,30 @@ class TextToSpeechService(AIModelService):
         try:
             # Convert the list to a tensor
             speech_tensor = torch.Tensor(speech_output)
+            bt.logging.info(f"Speech output length: {len(speech_output)}")
             # Normalize the speech data
             audio_data = speech_tensor / torch.max(torch.abs(speech_tensor))
+            bt.logging.info(f"Audio data length: {len(audio_data)}")
 
             # Convert to 32-bit PCM
             audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
+            bt.logging.info(f"Audio data length after conversion: {len(audio_data_int)}")
 
             # Add an extra dimension to make it a 2D tensor
             audio_data_int = audio_data_int.unsqueeze(0)
+            bt.logging.info(f"Audio data length after adding dimension: {len(audio_data_int)}")
 
             # Save the audio data as a .wav file
             if self.islocaltts:
                 output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
+                bt.logging.info(f"Saving audio data to {output_path}")
             else:
                 output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
+                bt.logging.info(f"Saving audio data to 2nd {output_path}")
             
             # Check if any WAV file with .wav extension exists and delete it
             existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
+            bt.logging.info(f"Existing WAV files: {existing_wav_files}")
             for existing_file in existing_wav_files:
                 try:
                     os.remove(os.path.join('/tmp', existing_file))
@@ -257,12 +266,14 @@ class TextToSpeechService(AIModelService):
             else:
                 sampling_rate = 16000
             torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+            bt.logging.info(f"Saved audio file to {output_path}")
             print(f"Saved audio file to {output_path}")
 
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
             self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
+            bt.logging.info(f"Scores after update in TTS: {self.scores}")
 
         except Exception as e:
             bt.logging.error(f"Error processing speech output: {e}")
