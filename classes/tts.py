@@ -167,8 +167,8 @@ class TextToSpeechService(AIModelService):
                 filtered_axons = self.get_filtered_axons_from_combinations()
                 bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for TTS at Step: {step} ---------------------------------")
                 bt.logging.info(f"______________Prompt______________: {g_prompt}")
-                responses = self.query_network(filtered_axons,g_prompt)
-                self.process_responses(filtered_axons,responses, g_prompt)
+                responses = await self.query_network(filtered_axons, g_prompt)  # await here
+                await self.process_responses(filtered_axons, responses, g_prompt)  # await here
 
                 if self.last_reset_weights_block + 1800 < self.current_block:
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
@@ -201,7 +201,7 @@ class TextToSpeechService(AIModelService):
             bt.logging.info(f"Next update will be at block: {self.last_updated_block + 100}")
             bt.logging.info(f"Skipping weight update. Last update was at block {self.last_updated_block}")
 
-    def process_responses(self,filtered_axons, responses, prompt):
+    async def process_responses(self, filtered_axons, responses, prompt):  # mark as async
         for axon, response in zip(filtered_axons, responses):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech):
                 self.process_response(axon, response, prompt)
