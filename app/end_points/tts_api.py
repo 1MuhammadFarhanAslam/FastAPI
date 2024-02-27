@@ -1,7 +1,9 @@
-import torch # Import TextToSpeechService from the specified module
 import bittensor as bt
 from classes.tts import TextToSpeechService
+import torch
+import random
 import lib
+
 
 class TTS_API(TextToSpeechService):
     def __init__(self):
@@ -55,4 +57,10 @@ class TTS_API(TextToSpeechService):
 
 =======
         return [0]  # You need to return a list of filtered axons here
+<<<<<<< HEAD
 >>>>>>> b3978e4b0a892aefd3848d4c4a0f5e073ec24e48
+=======
+
+    
+
+>>>>>>> f6ddd6eaf5cdb53ca7c192b1554b312cd4df42b9
