@@ -1,7 +1,9 @@
-import torch # Import TextToSpeechService from the specified module
 import bittensor as bt
 from classes.tts import TextToSpeechService
+import torch
+import random
 import lib
+
 
 class TTS_API(TextToSpeechService):
     def __init__(self):
@@ -49,3 +51,6 @@ class TTS_API(TextToSpeechService):
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
         return [0]  # You need to return a list of filtered axons here
+
+    
+
