@@ -177,16 +177,17 @@ class TextToSpeechService(AIModelService):
                     self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
 
 
-    async def query_network(self, filtered_axons, prompt):
-        # Network querying logic
-        
-        responses = self.dendrite.query(
-            filtered_axons,
-            lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
-            deserialize=True,
-            timeout=60,
-        )
-        return responses
+    async def query_network(self, axon, prompt):
+        try:
+            responses = await self.dendrite.query(
+                axon,
+                lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
+                deserialize=True,
+                timeout=60,
+            )
+            return responses
+        except Exception as e:
+            print(f"An error occurred in query_network: {e}")
 
     
     def update_block(self):
@@ -212,19 +213,21 @@ class TextToSpeechService(AIModelService):
 
 
     def process_response(self, axon, response, prompt):
-            try:
-                if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
-                    bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
-                    speech_output = response.speech_output
-                    self.handle_speech_output(axon, speech_output, prompt, response.model_name)
-                    bt.logging.info(f"Scores after update in TTS: {self.scores}")
-                elif response is not None and response.dendrite.status_code != 403:
-                    self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
-                    bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
-                else:
-                    pass
-            except Exception as e:
-                bt.logging.error(f'An error occurred while handling speech output: {e}')
+        try:
+            self.output_path = "/path/to/output/audio.wav"  # Assigning the output path
+            if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
+                bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
+                speech_output = response.speech_output
+                self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                bt.logging.info(f"Scores after update in TTS: {self.scores}")
+            elif response is not None and response.dendrite.status_code != 403:
+                self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
+                bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
+            else:
+                pass
+        except Exception as e:
+            bt.logging.error(f'An error occurred while handling speech output: {e}')
+
 
     def handle_speech_output(self, axon, speech_output, prompt, model_name):
         try:
