@@ -51,7 +51,7 @@ class AIModelService:
         parser.add_argument("--netuid", type=int, default=16, help="The chain subnet uid.")
         parser.add_argument("--vcdnp", type=int, default=10, help="Number of miners to query for each forward call.")
         parser.add_argument("--max_mse", type=float, default=1000.0, help="Maximum Mean Squared Error for Voice cloning.")
-        parser.add_argument("--auto_update", type=str, default='yes', help="Auto update option for github repository updates.")
+        parser.add_argument("--auto_update", type=str, default='no', help="Auto update option for github repository updates.")
 
         # Add Bittensor specific arguments
         bt.subtensor.add_args(parser)
