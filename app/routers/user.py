@@ -1,4 +1,4 @@
-
+# user.py
 from fastapi import APIRouter, Depends, HTTPException, Form
 from ..user_database import get_user, verify_user_credentials, update_user_password
 from fastapi import APIRouter, Depends, HTTPException
@@ -104,6 +104,8 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Use the prompt from the request in the query_network function
             bt.logging.info(f"request prompt: {request.prompt}")
             bt.logging.info(f"request axon here: {axon}")
+            bt.logging.info(f"type of request prompt: {type(request.prompt)}")
+            bt.logging.info(f"type of axon: {type(axon)}")
             response = tts_api.query_network(axon, request.prompt)
             bt.logging.info(f"TTS response: {response}")
 
