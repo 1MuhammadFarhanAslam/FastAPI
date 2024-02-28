@@ -179,18 +179,14 @@ class TextToSpeechService(AIModelService):
 
 
     def query_network(self, axon, prompt):
-        try:
-            responses = self.dendrite.query(
-                axon,
-                lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
-                deserialize=True,
-                timeout=60,
-            )
-            bt.logging.info(f"------------------------------------ prompt ------------------------------------ : {prompt}")
-            return responses
-        except Exception as e:
-            print(f"An error occurred in query_network: {e}")
-
+        responses = self.dendrite.query(
+            axon,
+            lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
+            deserialize=True,
+            timeout=60,
+        )
+        bt.logging.info(f"------------------------------------ prompt ------------------------------------ : {prompt}")
+        return responses
     
     def update_block(self):
         self.current_block = self.subtensor.block
