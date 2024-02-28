@@ -114,7 +114,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Save the TTS output to a file
             output_file_path = "/root/FastAPI/app/routers/audio.wav"
             with open(output_file_path, 'wb') as file:
-                file.write(response.speech_output)
+                file.write(response)
 
             # Return the TTS output
             with open(output_file_path, 'rb') as file:
