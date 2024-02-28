@@ -103,7 +103,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
             # Use the prompt from the request in the query_network function
             response = tts_api.query_network(axon, request.prompt)
-            bt.logging.info(f"TTS response: {response}")
+            bt.logging.info(f"TTS response: {response.speech_output}")
 
             # Process the response
             tts_api.process_response(axon, response, request.prompt)
@@ -112,7 +112,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Save the TTS output to a file
             output_file_path = "/root/FastAPI/app/routers/audio.wav"
             with open(output_file_path, 'wb') as file:
-                file.write(response)
+                file.write(response.speech_output)
 
             # Return the TTS output
             with open(output_file_path, 'rb') as file:
