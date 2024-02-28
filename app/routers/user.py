@@ -18,6 +18,8 @@ from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
 import lib.protocol
+from classes.aimodel import AIModelService
+
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -26,6 +28,11 @@ tts_api = TTS_API()
 # Define a Pydantic model for the request body
 class TTSRequest(BaseModel):
     prompt: str  # The prompt string that will be converted to speech
+
+class User(AIModelService):
+    def __init__(self):
+        super().__init__() 
+
 
 @router.post("/change_password", response_model=dict)
 async def change_user_password(
@@ -82,8 +89,8 @@ async def change_user_password(
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 
-def query_network(self, axon, prompt):
-    responses = self.dendrite.query(
+def query_network(axon, prompt):
+    responses = User.dendrite.query(
         axon,
         lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
         deserialize=True,
