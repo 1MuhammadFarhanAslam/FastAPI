@@ -11,6 +11,7 @@ import torchaudio
 # Import your module
 import lib.utils
 import lib
+import lib.protocol
 import traceback
 import pandas as pd
 import sys
@@ -185,7 +186,7 @@ class TextToSpeechService(AIModelService):
                 deserialize=True,
                 timeout=60,
             )
-            bt.logging.info(f"Responses: {responses}")
+            bt.logging.info(f"------------------------------------ Responses ------------------------------------ : {responses}")
             return responses
         except Exception as e:
             print(f"An error occurred in query_network: {e}")
