@@ -35,6 +35,8 @@ class User(AIModelService):
         self.dendrite = self.setup_dendrite()
 
 
+user = User()
+
 @router.post("/change_password", response_model=dict)
 async def change_user_password(
     username: str = Form(...),
@@ -91,7 +93,7 @@ async def change_user_password(
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 
 def query_network(axon, prompt):
-    responses = User.dendrite.query(
+    responses = user.dendrite.query(
         axon,
         lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
         deserialize=True,
