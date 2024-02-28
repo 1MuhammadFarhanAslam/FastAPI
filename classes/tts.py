@@ -229,8 +229,14 @@ class TextToSpeechService(AIModelService):
                     bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {dendrite_result.status_message}")
             else:
                 pass
+            
+            # Check if output_path is None and assign a default value if it is
+            if self.output_path is None:
+                self.output_path = "/root/FastAPI/app/routers/audio.wav"
+            
         except Exception as e:
             bt.logging.error(f'An error occurred while handling speech output: {e}')
+
 
 
 
