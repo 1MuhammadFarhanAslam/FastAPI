@@ -8,7 +8,7 @@ import lib
 class TTS_API(TextToSpeechService):
     def __init__(self):
         super().__init__()
-        self.output_path = None  # Initialize output_path attribute
+        self.output_path = "/root/FastAPI/app/routers/audio.wav"
 
     def get_filtered_axons(self):
         try:

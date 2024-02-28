@@ -212,31 +212,21 @@ class TextToSpeechService(AIModelService):
         self.update_block()
 
 
-    async def process_response(self, axon, response, prompt):
+    def process_response(self, axon, response, prompt):
         try:
-            # Assigning a default output path if it is not already set
-            if self.output_path is None:
-                self.output_path = "/root/FastAPI/app/routers/audio.wav"
-
-            if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None:
-                # Await the dendrite coroutine to get its result
-                dendrite_result = await response.dendrite
-                if dendrite_result.status_code == 200:
-                    bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
-                    speech_output = response.speech_output
-                    self.handle_speech_output(axon, speech_output, prompt, response.model_name)
-                    bt.logging.info(f"Scores after update in TTS: {self.scores}")
-                else:
-                    self.punish(axon, service="Text-To-Speech", punish_message=dendrite_result.status_message)
-                    bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {dendrite_result.status_message}")
+            self.output_path = "/root/FastAPI/app/routers/audio.wav"  # Assigning the output path
+            if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
+                bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
+                speech_output = response.speech_output
+                self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                bt.logging.info(f"Scores after update in TTS: {self.scores}")
+            elif response is not None and response.dendrite.status_code != 403:
+                self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
+                bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
             else:
                 pass
-
         except Exception as e:
             bt.logging.error(f'An error occurred while handling speech output: {e}')
-
-
-
 
 
     def handle_speech_output(self, axon, speech_output, prompt, model_name):
