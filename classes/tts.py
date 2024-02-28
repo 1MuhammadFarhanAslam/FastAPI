@@ -106,7 +106,7 @@ class TextToSpeechService(AIModelService):
         while True:
             self.check_and_update_wandb_run()
             try:
-                await self.main_loop_logic(step)
+                self.main_loop_logic(step)
                 step += 1
                 await asyncio.sleep(0.5)  # Adjust the sleep time as needed
                 if step % 50 == 0 and self.config.auto_update == 'yes':
@@ -118,7 +118,7 @@ class TextToSpeechService(AIModelService):
                 print(f"An error occurred in TextToSpeechService: {e}")
                 traceback.print_exc()
 
-    async def main_loop_logic(self, step):
+    def main_loop_logic(self, step):
         # Sync and update weights logic
         if step % 10 == 0:
             self.metagraph.sync(subtensor=self.subtensor)
@@ -147,8 +147,8 @@ class TextToSpeechService(AIModelService):
                 self.p_index = p_index
                 filtered_axons = self.get_filtered_axons_from_combinations()
                 bt.logging.info(f"--------------------------------- Prompt are being used locally for TTS at Step: {step} ---------------------------------")
-                responses = await self.query_network(filtered_axons, lprompt)
-                await self.process_responses(filtered_axons, responses, lprompt)
+                responses = self.query_network(filtered_axons, lprompt)
+                self.process_responses(filtered_axons, responses, lprompt)
 
                 if self.last_reset_weights_block + 1800 < self.current_block:
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
@@ -167,8 +167,8 @@ class TextToSpeechService(AIModelService):
                 filtered_axons = self.get_filtered_axons_from_combinations()
                 bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for TTS at Step: {step} ---------------------------------")
                 bt.logging.info(f"______________Prompt______________: {g_prompt}")
-                responses = await self.query_network(filtered_axons, g_prompt)
-                await self.process_responses(filtered_axons, responses, g_prompt)
+                responses = self.query_network(filtered_axons, g_prompt)
+                self.process_responses(filtered_axons, responses, g_prompt)
 
                 if self.last_reset_weights_block + 1800 < self.current_block:
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
