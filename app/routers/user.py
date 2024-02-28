@@ -32,8 +32,6 @@ class TTSRequest(BaseModel):
 class User(AIModelService):
     def __init__(self):
         super().__init__() 
-        self.dendrite = self.setup_dendrite()
-
 
 user = User()
 
