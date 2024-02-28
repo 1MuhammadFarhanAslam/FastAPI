@@ -80,6 +80,9 @@ async def change_user_password(
 
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
+from fastapi import UploadFile, File
+import shutil
+
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
@@ -108,8 +111,13 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             tts_api.process_response(axon, response, request.prompt)
             bt.logging.info(f"TTS output path: {tts_api.output_path}")
 
+            # Save the TTS output to a file
+            output_file_path = "/root/FastAPI/app/routers/audio.wav"
+            with open(output_file_path, 'wb') as file:
+                file.write(response.speech_output)
+
             # Return the TTS output
-            with open(tts_api.output_path, 'rb') as file:
+            with open(output_file_path, 'rb') as file:
                 audio_data = file.read()
                 bt.logging.info(f"TTS audio data: {audio_data}")
                 return StreamingResponse(BytesIO(audio_data), media_type="audio/wav")
@@ -120,6 +128,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
 
 
 
