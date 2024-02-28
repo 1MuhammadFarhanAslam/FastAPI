@@ -214,8 +214,10 @@ class TextToSpeechService(AIModelService):
 
     async def process_response(self, axon, response, prompt):
         try:
-            self.output_path = "/root/FastAPI/app/routers/audio.wav"  # Assigning the output path
-            
+            # Assigning a default output path if it is not already set
+            if self.output_path is None:
+                self.output_path = "/root/FastAPI/app/routers/audio.wav"
+
             if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None:
                 # Await the dendrite coroutine to get its result
                 dendrite_result = await response.dendrite
@@ -229,13 +231,10 @@ class TextToSpeechService(AIModelService):
                     bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {dendrite_result.status_message}")
             else:
                 pass
-            
-            # Check if output_path is None and assign a default value if it is
-            if self.output_path is None:
-                self.output_path = "/root/FastAPI/app/routers/audio.wav"
-            
+
         except Exception as e:
             bt.logging.error(f'An error occurred while handling speech output: {e}')
+
 
 
 
