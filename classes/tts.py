@@ -185,6 +185,7 @@ class TextToSpeechService(AIModelService):
                 deserialize=True,
                 timeout=60,
             )
+            bt.logging.trace(f"Responses: {responses}")
             return responses
         except Exception as e:
             print(f"An error occurred in query_network: {e}")
