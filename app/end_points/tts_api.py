@@ -69,6 +69,6 @@ class TTS_API(TextToSpeechService):
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
 
-        return self.filtered_axon  # Return filtered axons list
+        return [0,31] # Return filtered axons list
 
     
