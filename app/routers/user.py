@@ -17,6 +17,7 @@ from ..end_points.tts_api import TTS_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
+import lib.protocol
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -81,6 +82,16 @@ async def change_user_password(
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 
+def query_network(self, axon, prompt):
+    responses = self.dendrite.query(
+        axon,
+        lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
+        deserialize=True,
+        timeout=60,
+    )
+    bt.logging.info(f"------------------------------------ prompt ------------------------------------ : {prompt}")
+    return responses
+
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
@@ -104,7 +115,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Use the prompt from the request in the query_network function
             bt.logging.info(f"request prompt: {request.prompt}")
             bt.logging.info(f"request axon here : {axon}")
-            response = tts_api.query_network(axon, request.prompt)
+            response = query_network(axon, request.prompt)
             bt.logging.info(f"TTS response: {response}")
 
             # Process the response
