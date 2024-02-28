@@ -91,7 +91,7 @@ async def change_user_password(
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 
 def query_network(axon, prompt):
-    responses = user.dendrite.query(
+    responses = user.dendrite.forward(
         axon,
         lib.protocol.TextToSpeech(roles=["user"], text_input=prompt),
         deserialize=True,
