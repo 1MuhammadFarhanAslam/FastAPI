@@ -80,8 +80,6 @@ async def change_user_password(
 
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
-from fastapi import UploadFile, File
-import shutil
 
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
