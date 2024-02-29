@@ -83,87 +83,54 @@ async def change_user_password(
 
 ##########################################################################################################################
 
-# Endpoint for tts_service
-# Modify the endpoint to accept POST requests and use the TTSRequest model
-
-# @router.post("/tts_service/")
-# async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
-#     user_dict = jsonable_encoder(user)
-#     print("User details:", user_dict)
-#     if user.roles:
-#         role = user.roles[0]
-#         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-#             print('Congratulations! You have access to Text-to_Speech (TTS) service.')
-
-#             # Get filtered axons
-#             filtered_axons = tts_api.get_filtered_axons()
-#             bt.logging.info(f"Filtered axons: {filtered_axons}")
-
-#             # Check if there are axons available
-#             if not filtered_axons:
-#                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech")
-
-#             # Choose a TTS axon randomly
-#             axon = np.random.choice(filtered_axons)
-#             bt.logging.info(f"Chosen axon: {axon}")
-
-#             # Use the prompt from the request in the query_network function
-#             bt.logging.info(f"request prompt: {request.prompt}")
-#             bt.logging.info(f"request axon here: {axon}")
-#             response = tts_api.query_network(axon, request.prompt)
-#             bt.logging.info(f"TTS response: {response}")
-
-#             # Process the response
-#             tts_api.process_response(axon, response, request.prompt)
-
-#             return {"message": f"{user.username}! Welcome to the TTS service, enjoy your experience!"}
-
-
-#         else:
-#             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
-#                  HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
-#     else:
-#         # If the user doesn't have any roles assigned, raise 403 Forbidden
-#         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+from fastapi import BackgroundTasks
 
 @router.post("/tts_service/")
-async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user), background_tasks: BackgroundTasks):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
             print('Congratulations! You have access to Text-to-Speech (TTS) service.')
-            
-            # Get filtered axons
-            filtered_axons = tts_api.get_filtered_axons()
-            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
-            # Check if there are axons available
-            if not filtered_axons:
-                raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech")
+            # Define a background task to process TTS asynchronously
+            def process_tts():
+                # Get filtered axons
+                filtered_axons = tts_api.get_filtered_axons()
+                bt.logging.info(f"Filtered axons: {filtered_axons}")
 
-            # Choose a TTS axon randomly
-            axon = np.random.choice(filtered_axons)
-            bt.logging.info(f"Chosen axon: {axon}")
+                # Check if there are axons available
+                if not filtered_axons:
+                    raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech")
 
-            # Use the prompt from the request in the query_network function
-            bt.logging.info(f"request prompt: {request.prompt}")
-            bt.logging.info(f"request axon here: {axon}")
-            response = tts_api.query_network(axon, request.prompt)
+                # Choose a TTS axon randomly
+                axon = np.random.choice(filtered_axons)
+                bt.logging.info(f"Chosen axon: {axon}")
 
-            # Process the response
-            audio_data = tts_api.process_response(axon, response, request.prompt)
+                # Use the prompt from the request in the query_network function
+                bt.logging.info(f"request prompt: {request.prompt}")
+                bt.logging.info(f"request axon here: {axon}")
+                response = tts_api.query_network(axon, request.prompt)
 
-            file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
-            if file_extension not in ['.wav', '.mp3']:
-                raise HTTPException(status_code=500, detail="Unsupported audio format")
+                # Process the response
+                audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            # Set the appropriate content type based on the file extension
-            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+                file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
+                if file_extension not in ['.wav', '.mp3']:
+                    raise HTTPException(status_code=500, detail="Unsupported audio format")
 
-            # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+                # Set the appropriate content type based on the file extension
+                content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+
+                # Return the audio file
+                return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+
+            # Enqueue the background task
+            background_tasks.add_task(process_tts)
+
+            # Return a message indicating that TTS processing has started
+            return {"message": "Text-to-Speech (TTS) processing has started. Please wait for the audio file."}
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
@@ -171,6 +138,8 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
+
 
 
 
