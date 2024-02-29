@@ -155,6 +155,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Process the response
             audio_data = tts_api.process_response(axon, response, request.prompt)
 
+            bt.logging.info(f"-------------------------------------------- Audio data -------------------------------------------- : {audio_data}")
             # Serialize audio data
             audio_bytes_io = BytesIO(audio_data)
             
