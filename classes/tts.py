@@ -186,7 +186,7 @@ class TextToSpeechService(AIModelService):
             timeout=60,
         )
         bt.logging.info(f"------------------------------------ prompt ------------------------------------ : {prompt}")
-        bt.logging.debug(f"Responses: {responses}")
+        # bt.logging.debug(f"Responses: {responses}")
         return responses
     
     def update_block(self):
