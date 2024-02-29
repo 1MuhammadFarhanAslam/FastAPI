@@ -167,7 +167,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
                 with open(audio_file_path, mode="rb") as audio_file:
                     audio_data = audio_file.read()
                 # Return a response containing the message and audio data
-                return Response(content=f"Your audio has been generated successfully, {user.username}! Welcome to the TTS service, enjoy your experience!", content_type="text/plain", headers=headers)
+                return Response(content=f" {user.username}! Welcome to the TTS service, enjoy your experience!.Your audio has been generated successfully.", content_type="text/plain", headers=headers)
             else:
                 raise HTTPException(status_code=500, detail="Error generating audio file")
         else:
