@@ -21,6 +21,8 @@ from fastapi.responses import FileResponse
 from os.path import exists
 import os
 
+from fastapi import BackgroundTasks
+
 
 
 router = APIRouter()
@@ -83,16 +85,16 @@ async def change_user_password(
 
 ##########################################################################################################################
 
-from fastapi import BackgroundTasks
-
 @router.post("/tts_service/")
-async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user), background_tasks: BackgroundTasks):
+async def tts_service(request: TTSRequest, background_tasks: BackgroundTasks, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-            print('Congratulations! You have access to Text-to-Speech (TTS) service.')
+            print('{user.username}, Congratulations! You have access to Text-to-Speech (TTS) service.')
+            bt.logging.info(f'{user.username}, Congratulations! You have access to Text-to-Speech (TTS) service.')
+
 
             # Define a background task to process TTS asynchronously
             def process_tts():
@@ -138,6 +140,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
 
 
 
