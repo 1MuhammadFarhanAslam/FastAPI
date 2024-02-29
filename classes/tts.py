@@ -216,14 +216,14 @@ class TextToSpeechService(AIModelService):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
                 speech_output = response.speech_output
-                self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                audio_file = self.handle_speech_output(axon, speech_output, prompt, response.model_name)
                 bt.logging.info(f"Scores after update in TTS: {self.scores}")
             elif response is not None and response.dendrite.status_code != 403:
                 self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
                 bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
             else:
                 pass
-            return speech_output
+            return audio_file
         except Exception as e:
             bt.logging.error(f'An error occurred while handling speech output: {e}')
 
@@ -278,7 +278,7 @@ class TextToSpeechService(AIModelService):
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
             self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
             bt.logging.info(f"Scores after update in TTS: {self.scores}")
-
+            return output_path
         except Exception as e:
             bt.logging.error(f"Error processing speech output: {e}")
 

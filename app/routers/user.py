@@ -153,7 +153,11 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Process the response
             audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            return StreamingResponse(BytesIO(audio_data), media_type="audio/wav")
+            # Open the file in binary read mode and read the contents
+            with open(audio_data, 'rb') as audio_file:
+                audio_bytes = audio_file.read()
+
+            return StreamingResponse(BytesIO(audio_bytes), media_type="audio/wav")
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
