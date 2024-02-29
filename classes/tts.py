@@ -216,13 +216,14 @@ class TextToSpeechService(AIModelService):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
                 speech_output = response.speech_output
-                self.handle_speech_output(axon, speech_output, prompt, response.model_name)
+                audio_file = self.handle_speech_output(axon, speech_output, prompt, response.model_name)
                 bt.logging.info(f"Scores after update in TTS: {self.scores}")
             elif response is not None and response.dendrite.status_code != 403:
                 self.punish(axon, service="Text-To-Speech", punish_message=response.dendrite.status_message)
                 bt.logging.error(f"Received Text to speech output from {axon.hotkey} but it was not successful. Error: {response.dendrite.status_message}")
             else:
                 pass
+            return audio_file
         except Exception as e:
             bt.logging.error(f'An error occurred while handling speech output: {e}')
 
@@ -252,14 +253,14 @@ class TextToSpeechService(AIModelService):
                 output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
                 bt.logging.info(f"Saving audio data to 2nd {output_path}")
             
-            # Check if any WAV file with .wav extension exists and delete it
-            existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
-            bt.logging.info(f"Existing WAV files: {existing_wav_files}")
-            for existing_file in existing_wav_files:
-                try:
-                    os.remove(os.path.join('/tmp', existing_file))
-                except Exception as e:
-                    bt.logging.error(f"Error deleting existing WAV file: {e}")
+            # # Check if any WAV file with .wav extension exists and delete it
+            # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
+            # bt.logging.info(f"Existing WAV files: {existing_wav_files}")
+            # for existing_file in existing_wav_files:
+            #     try:
+            #         os.remove(os.path.join('/tmp', existing_file))
+            #     except Exception as e:
+            #         bt.logging.error(f"Error deleting existing WAV file: {e}")
 
             # Save the audio file
             if model_name == "suno/bark":
@@ -277,6 +278,7 @@ class TextToSpeechService(AIModelService):
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
             self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
             bt.logging.info(f"Scores after update in TTS: {self.scores}")
+            return output_path
 
         except Exception as e:
             bt.logging.error(f"Error processing speech output: {e}")

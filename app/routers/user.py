@@ -152,24 +152,16 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             bt.logging.info(f"request axon here: {axon}")
             response = tts_api.query_network(axon, request.prompt)
             # bt.logging.info(f"TTS response: {response}")
+            # Process the response
+            audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            # Process the response to generate the audio file
-            audio_file_path = tts_api.process_response(axon, response, request.prompt)
+            # Serialize audio data
+            audio_bytes_io = BytesIO(audio_data)
             
-            # Return a message along with the audio file
-            if audio_file_path:
-                # Set the appropriate headers for a WAV file
-                headers = {
-                    "Content-Disposition": f'attachment; filename="audio.wav"',
-                    "Content-Type": "audio/wav",
-                }
-                # Open the audio file and read its content
-                with open(audio_file_path, mode="rb") as audio_file:
-                    audio_data = audio_file.read()
-                # Return a response containing the message and audio data
-                return Response(content=f" {user.username}! Welcome to the TTS service, enjoy your experience!.Your audio has been generated successfully.", content_type="text/plain", headers=headers)
-            else:
-                raise HTTPException(status_code=500, detail="Error generating audio file")
+            return {
+                "message": f"{user.username}! Welcome to the TTS service, enjoy your experience!",
+                "audio": audio_bytes_io.getvalue()
+            }                # Return a response containing the message and audio data
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
