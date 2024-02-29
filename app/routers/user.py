@@ -113,10 +113,10 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
-            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
+            raise HTTPException(status_code=402, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
-        raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+        raise HTTPException(status_code=404, detail="You do not have any roles assigned")
 
 
 
