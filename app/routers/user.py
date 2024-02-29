@@ -124,12 +124,10 @@ async def change_user_password(
     
 
 
-
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
-    
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
@@ -151,25 +149,19 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             bt.logging.info(f"request prompt: {request.prompt}")
             bt.logging.info(f"request axon here: {axon}")
             response = tts_api.query_network(axon, request.prompt)
-            # bt.logging.info(f"TTS response: {response}")
+            bt.logging.info(f"TTS response: {response}")
+
             # Process the response
             audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            bt.logging.info(f"-------------------------------------------- Audio data -------------------------------------------- : {audio_data}")
-            # Serialize audio data
-            audio_bytes_io = BytesIO(audio_data)
-            
-            return {
-                "message": f"{user.username}! Welcome to the TTS service, enjoy your experience!",
-                "audio": audio_bytes_io.getvalue()
-            }                # Return a response containing the message and audio data
+            return StreamingResponse(BytesIO(audio_data), media_type="audio/wav")
+
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
-
 
 
 
