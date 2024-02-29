@@ -68,10 +68,10 @@ class TTS_API(TextToSpeechService):
 
             self.filtered_axon = filtered_uids
             bt.logging.info(f"Filtered axons in fastapi: {self.filtered_axon}")
+            filtered_axons = [self.filtered_axon[i] for i in [0,31]]
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
             
-            filtered_axons = [self.filtered_axon[i] for i in [0,31]]
 
         return filtered_axons # Return filtered axons list
 
