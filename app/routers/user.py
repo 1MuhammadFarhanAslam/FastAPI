@@ -17,6 +17,7 @@ from ..end_points.tts_api import TTS_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
+from fastapi.responses import Response
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -81,14 +82,59 @@ async def change_user_password(
 # Endpoint for tts_service
 # Modify the endpoint to accept POST requests and use the TTSRequest model
 
+# @router.post("/tts_service/")
+# async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+#     user_dict = jsonable_encoder(user)
+#     print("User details:", user_dict)
+#     if user.roles:
+#         role = user.roles[0]
+#         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
+#             print('Congratulations! You have access to Text-to_Speech (TTS) service.')
+
+#             # Get filtered axons
+#             filtered_axons = tts_api.get_filtered_axons()
+#             bt.logging.info(f"Filtered axons: {filtered_axons}")
+
+#             # Check if there are axons available
+#             if not filtered_axons:
+#                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech")
+
+#             # Choose a TTS axon randomly
+#             axon = np.random.choice(filtered_axons)
+#             bt.logging.info(f"Chosen axon: {axon}")
+
+#             # Use the prompt from the request in the query_network function
+#             bt.logging.info(f"request prompt: {request.prompt}")
+#             bt.logging.info(f"request axon here: {axon}")
+#             response = tts_api.query_network(axon, request.prompt)
+#             bt.logging.info(f"TTS response: {response}")
+
+#             # Process the response
+#             tts_api.process_response(axon, response, request.prompt)
+
+#             return {"message": f"{user.username}! Welcome to the TTS service, enjoy your experience!"}
+
+
+#         else:
+#             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
+#                  HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
+#     else:
+#         # If the user doesn't have any roles assigned, raise 403 Forbidden
+#         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+    
+
+
+
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
+    
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-
+            print('Congratulations! You have access to Text-to_Speech (TTS) service.')
+            
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
             bt.logging.info(f"Filtered axons: {filtered_axons}")
@@ -107,16 +153,30 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             response = tts_api.query_network(axon, request.prompt)
             bt.logging.info(f"TTS response: {response}")
 
-            # Process the response
-            tts_api.process_response(axon, response, request.prompt)
-            bt.logging.info(f"TTS output path: {tts_api.output_path}")
-
+            # Process the response to generate the audio file
+            audio_file_path = tts_api.process_response(axon, response, request.prompt)
+            
+            # Return a message along with the audio file
+            if audio_file_path:
+                # Set the appropriate headers for a WAV file
+                headers = {
+                    "Content-Disposition": f'attachment; filename="audio.wav"',
+                    "Content-Type": "audio/wav",
+                }
+                # Open the audio file and read its content
+                with open(audio_file_path, mode="rb") as audio_file:
+                    audio_data = audio_file.read()
+                # Return a response containing the message and audio data
+                return Response(content=f"Your audio has been generated successfully, {user.username}! Welcome to the TTS service, enjoy your experience!", content_type="text/plain", headers=headers)
+            else:
+                raise HTTPException(status_code=500, detail="Error generating audio file")
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
-                 HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
+            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service")
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+
 
 
 
