@@ -1,3 +1,4 @@
+# aimodel.py
 import os
 import argparse
 import bittensor as bt
