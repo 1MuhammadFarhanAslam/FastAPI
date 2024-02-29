@@ -123,6 +123,10 @@ async def change_user_password(
 #         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
     
 
+import os
+from fastapi import HTTPException
+from fastapi.responses import Response
+import tempfile
 
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
@@ -131,7 +135,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-            print('Congratulations! You have access to Text-to_Speech (TTS) service.')
+            print('Congratulations! You have access to Text-to-Speech (TTS) service.')
             
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
@@ -153,11 +157,17 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Process the response
             audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            # Open the file in binary read mode and read the contents
-            with open(audio_data, 'rb') as audio_file:
-                audio_bytes = audio_file.read()
+            # Convert audio data to bytes if necessary
+            if isinstance(audio_data, str):
+                audio_data = audio_data.encode('utf-8')
 
-            return StreamingResponse(BytesIO(audio_bytes), media_type="audio/wav")
+            # Save audio data to a file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                temp_audio_file.write(audio_data)
+                audio_file_path = temp_audio_file.name
+
+            # Return a response indicating successful generation and save of the audio file
+            return Response(content="Audio file generated and saved successfully at: {}".format(audio_file_path))
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
@@ -165,7 +175,6 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
-
 
 
 
