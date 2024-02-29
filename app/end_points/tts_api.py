@@ -12,6 +12,7 @@ class TTS_API(TextToSpeechService):
         self.output_path = "/root/FastAPI/app/routers/audio.wav"
 
     def get_filtered_axons(self):
+        filtered_axons = []
         try:
             uids = self.metagraph.uids.tolist()
             queryable_uids = (self.metagraph.total_stake >= 0)
