@@ -17,7 +17,11 @@ from ..end_points.tts_api import TTS_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
-from fastapi.responses import Response
+from fastapi.responses import FileResponse
+from os.path import exists
+import os
+
+
 
 router = APIRouter()
 tts_api = TTS_API()
@@ -121,12 +125,6 @@ async def change_user_password(
 #     else:
 #         # If the user doesn't have any roles assigned, raise 403 Forbidden
 #         raise HTTPException(status_code=403, detail="You do not have any roles assigned")
-    
-
-import os
-from fastapi import HTTPException
-from fastapi.responses import Response
-import tempfile
 
 @router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
@@ -157,17 +155,15 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
             # Process the response
             audio_data = tts_api.process_response(axon, response, request.prompt)
 
-            # Convert audio data to bytes if necessary
-            if isinstance(audio_data, str):
-                audio_data = audio_data.encode('utf-8')
+            file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format")
 
-            # Save audio data to a file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                temp_audio_file.write(audio_data)
-                audio_file_path = temp_audio_file.name
+            # Set the appropriate content type based on the file extension
+            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
-            # Return a response indicating successful generation and save of the audio file
-            return Response(content="Audio file generated and saved successfully at: {}".format(audio_file_path))
+            # Return the audio file
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
