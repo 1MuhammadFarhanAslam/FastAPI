@@ -85,7 +85,7 @@ async def change_user_password(
 
 ##########################################################################################################################
 
-@router.get("/tts_service/")
+@router.post("/tts_service/")
 async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
