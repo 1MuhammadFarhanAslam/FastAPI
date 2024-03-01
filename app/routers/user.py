@@ -14,6 +14,7 @@ import re
 import numpy as np
 from fastapi.encoders import jsonable_encoder
 from ..end_points.tts_api import TTS_API
+from ..end_points.ttm_api import TTM_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
@@ -25,6 +26,7 @@ import os
 
 router = APIRouter()
 tts_api = TTS_API()
+ttm_api = TTM_API()
 
 
 # Define a Pydantic model for the request body
@@ -134,14 +136,43 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
 # Endpoint for ttm_service
 @router.get("/ttm_service")
-def ttm_service(user: User = Depends(get_current_active_user)):
+def ttm_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.ttm_enabled == 1:
             print("Congratulations! You have access to Text-to-Music (TTM) service.")
-            return {"message": f"{user.username}! Welcome to the Text-to-Music service, enjoy your experience!"}
+            # Get filtered axons
+            filtered_axons = ttm_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
+
+            # Check if there are axons available
+            if not filtered_axons:
+                raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech.")
+
+            # Choose a TTS axon randomly
+            axon = np.random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}")
+
+            # Use the prompt from the request in the query_network function
+            bt.logging.info(f"request prompt: {request.prompt}")
+            bt.logging.info(f"request axon here: {axon}")
+            response = ttm_api.query_network(axon, request.prompt)
+
+            # Process the response
+            audio_data = ttm_api.process_response(axon, response, request.prompt)
+
+            file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
+
+            # Set the appropriate content type based on the file extension
+            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+
+            # Return the audio file
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+
         else:
             print("You do not have access to Text-to-Music service or subscription is expired.")
             raise HTTPException(status_code=403, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
