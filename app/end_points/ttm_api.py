@@ -9,6 +9,7 @@ import lib
 class TTM_API(MusicGenerationService):
     def __init__(self):
         super().__init__()
+        self.output_path = "/root/FastAPI/app/end_points/audio.wav"
 
     def get_filtered_axons(self):
         filtered_axons = []

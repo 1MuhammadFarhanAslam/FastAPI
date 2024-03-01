@@ -165,6 +165,7 @@ def ttm_service(request: TTSRequest, user: User = Depends(get_current_active_use
 
             for audio_file_path in audio_data:
                 file_extension = os.path.splitext(audio_file_path)[1].lower()
+                bt.logging.info(f"audio_file_path: {audio_file_path}")
             # Process each audio file path as needed
 
             if file_extension not in ['.wav', '.mp3']:
