@@ -135,7 +135,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
 
 # Endpoint for ttm_service
-@router.get("/ttm_service")
+@router.post("/ttm_service")
 def ttm_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
@@ -181,7 +181,7 @@ def ttm_service(request: TTSRequest, user: User = Depends(get_current_active_use
         raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
     
 
-@router.get("/vc_service")
+@router.post("/vc_service")
 def vc_service(user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
