@@ -1,12 +1,12 @@
 # tts_api.py
 import bittensor as bt
-from classes.ttm import MusicGenerationService
+from classes.vc import VoiceCloningService
 import torch
 import random
 import lib
 
 
-class TTM_API(MusicGenerationService):
+class VC_API(VoiceCloningService):
     def __init__(self):
         super().__init__()
 
@@ -67,7 +67,7 @@ class TTM_API(MusicGenerationService):
 
             self.filtered_axon = filtered_uids
             bt.logging.info(f"Filtered axons in fastapi: {self.filtered_axon}")
-            filtered_axons = [self.metagraph.axons[i] for i in [0]]
+            filtered_axons = [self.metagraph.axons[i] for i in [0,31]]
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
             

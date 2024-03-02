@@ -15,24 +15,30 @@ import numpy as np
 from fastapi.encoders import jsonable_encoder
 from ..end_points.tts_api import TTS_API
 from ..end_points.ttm_api import TTM_API
+from ..end_points.vc_api import VC_API
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
 from fastapi.responses import FileResponse
 from os.path import exists
 import os
+import torchaudio
 
 
 
 router = APIRouter()
 tts_api = TTS_API()
 ttm_api = TTM_API()
+vc_api = VC_API()
 
 
 
 # Define a Pydantic model for the request body
-class TTSRequest(BaseModel):
-    prompt: str  # The prompt string that will be converted to speech
+class TTSMrequest(BaseModel):
+    prompt: str 
+
+class VCRequest(BaseModel):
+    prompt: str 
 
 @router.post("/change_password", response_model=dict)
 async def change_user_password(
@@ -87,7 +93,7 @@ async def change_user_password(
 ##########################################################################################################################
 
 @router.post("/tts_service/")
-async def tts_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+async def tts_service(request: TTSMrequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
@@ -138,7 +144,7 @@ async def tts_service(request: TTSRequest, user: User = Depends(get_current_acti
 
 # Endpoint for ttm_service
 @router.post("/ttm_service")
-async def ttm_service(request: TTSRequest, user: User = Depends(get_current_active_user)):
+async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     if user.roles:
@@ -187,7 +193,7 @@ async def ttm_service(request: TTSRequest, user: User = Depends(get_current_acti
      
 
 @router.post("/vc_service")
-async def vc_service(request: TTSRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File(...)
+async def vc_service(request: VCRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File(...)
 ):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
@@ -196,12 +202,47 @@ async def vc_service(request: TTSRequest, user: User = Depends(get_current_activ
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
-            
+            # Get filtered axons
+            filtered_axons = vc_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
+
+            # Check if there are axons available
+            if not filtered_axons:
+                raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
+
             # Process the uploaded file
             contents = await audio_file.read()  # Read the contents of the uploaded file
-            # You can then do further processing with the file contents
+            # Read the audio file and return its content
+            waveform, sample_rate = torchaudio.load(contents)
+
+            # Choose a TTS axon randomly
+            axon = np.random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}")
+
+            # Use the prompt from the request in the query_network function
+            bt.logging.info(f"request prompt: {request.prompt}")
+            bt.logging.info(f"request axon here: {axon}")
+            response = vc_api.generate_voice_clone(axon, text_input=request.prompt, clone_input=contents, sample_rate=sample_rate)
+
+            # Process the response
+            audio_data = vc_api.process_response(axon, response, request.prompt)
+
+            file_extension = os.path.splitext(audio_data)[1].lower()
+            bt.logging.info(f"audio_file_path: {audio_data}")
+            # Process each audio file path as needed
+
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
+
+            # Set the appropriate content type based on the file extension
+            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+
+
+
+            # Return the audio file
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+
             
-            return {"message": f"{user.username}! Welcome to the Voice Clone service. Enjoy your experience!"}
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")

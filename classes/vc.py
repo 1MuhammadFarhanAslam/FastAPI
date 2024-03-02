@@ -203,7 +203,7 @@ class VoiceCloningService(AIModelService):
             print(f"An error occurred while reading the audio file: {e}")
     
 
-    async def generate_voice_clone(self, text_input, clone_input, sample_rate):
+    async def generate_voice_clone(self, text_input, clone_input, sample_rate, axon=None):
         try:
             self.filtered_axons = self.get_filtered_axons_from_combinations()
             for ax in self.filtered_axons:
@@ -215,6 +215,7 @@ class VoiceCloningService(AIModelService):
                 )
                 # Process the responses if needed
                 self.process_voice_clone_responses(ax)
+                return self.response
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
         except Exception as e:
             print(f"An error occurred while processing the voice clone: {e}")
