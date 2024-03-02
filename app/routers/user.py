@@ -203,11 +203,11 @@ async def vc_service(request: VCRequest, user: User = Depends(get_current_active
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
             # Check if the file is an audio file
-            allowed_audio_types = ["audio/mpeg", "audio/wav", "audio/mp3"]  # Add more audio MIME types if needed
-            file_type = guess_type(audio_file.filename)[0]
+            # allowed_audio_types = ["audio/mpeg", "audio/wav", "audio/mp3"]  # Add more audio MIME types if needed
+            # file_type = guess_type(audio_file.filename)[0]
             
-            if file_type not in allowed_audio_types:
-                raise HTTPException(status_code=400, detail="Uploaded file must be an audio file.")
+            # if file_type not in allowed_audio_types:
+            #     raise HTTPException(status_code=400, detail="Uploaded file must be an audio file.")
             # Get filtered axons
             filtered_axons = vc_api.get_filtered_axons()
             bt.logging.info(f"Filtered axons: {filtered_axons}")
