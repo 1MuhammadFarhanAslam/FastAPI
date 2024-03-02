@@ -227,7 +227,7 @@ async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile]
             response = vc_api.generate_voice_clone(text_input=request, clone_input=temp_file_path, sample_rate=sample_rate, api_axon=axon)
 
             # Process the response
-            audio_data = vc_api.handle_clone_output(axon, response, request)
+            audio_data = vc_api.handle_clone_output(axon, response)
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
