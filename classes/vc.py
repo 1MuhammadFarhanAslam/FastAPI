@@ -262,6 +262,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    clone_file = cloned_file_path
                     bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
@@ -274,7 +275,7 @@ class VoiceCloningService(AIModelService):
                 #         os.remove(os.path.join('/tmp', existing_file))
                 #     except Exception as e:
                 #         bt.logging.error(f"Error deleting existing WAV file: {e}")
-                return cloned_file_path
+                return clone_file
         except Exception as e:
             pass
             # bt.logging.info(f"Error processing speech output : {e}")
