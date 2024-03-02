@@ -262,6 +262,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     clone_file = cloned_file_path
                     bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
