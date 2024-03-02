@@ -20,6 +20,7 @@ from fastapi.responses import StreamingResponse
 from io import BytesIO
 import bittensor as bt
 from fastapi.responses import FileResponse
+from mimetypes import guess_type
 from os.path import exists
 import os
 import torchaudio
@@ -202,6 +203,12 @@ async def vc_service(request: VCRequest, user: User = Depends(get_current_active
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
+            # Check if the file is an audio file
+            allowed_audio_types = ["audio/mpeg", "audio/wav", "audio/mp3"]  # Add more audio MIME types if needed
+            file_type = guess_type(audio_file.filename)[0]
+            
+            if file_type not in allowed_audio_types:
+                raise HTTPException(status_code=400, detail="Uploaded file must be an audio file.")
             # Get filtered axons
             filtered_axons = vc_api.get_filtered_axons()
             bt.logging.info(f"Filtered axons: {filtered_axons}")
@@ -222,10 +229,10 @@ async def vc_service(request: VCRequest, user: User = Depends(get_current_active
             # Use the prompt from the request in the query_network function
             bt.logging.info(f"request prompt: {request.prompt}")
             bt.logging.info(f"request axon here: {axon}")
-            response = vc_api.generate_voice_clone(axon, text_input=request.prompt, clone_input=contents, sample_rate=sample_rate)
+            response = vc_api.generate_voice_clone(text_input=request.prompt, clone_input=contents, sample_rate=sample_rate, axon=axon)
 
             # Process the response
-            audio_data = vc_api.process_response(axon, response, request.prompt)
+            audio_data = vc_api.handle_clone_output(axon, response, request.prompt)
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")

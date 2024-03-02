@@ -203,9 +203,9 @@ class VoiceCloningService(AIModelService):
             print(f"An error occurred while reading the audio file: {e}")
     
 
-    async def generate_voice_clone(self, text_input, clone_input, sample_rate, axon=None):
+    async def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None):
         try:
-            self.filtered_axons = self.get_filtered_axons_from_combinations()
+            self.filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
             for ax in self.filtered_axons:
                 self.response = await self.dendrite.forward(
                     ax,
@@ -258,13 +258,13 @@ class VoiceCloningService(AIModelService):
                 # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
                 self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axon)
-                existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
-                for existing_file in existing_wav_files:
-                    try:
-                        os.remove(os.path.join('/tmp', existing_file))
-                    except Exception as e:
-                        bt.logging.error(f"Error deleting existing WAV file: {e}")
-
+                # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
+                # for existing_file in existing_wav_files:
+                #     try:
+                #         os.remove(os.path.join('/tmp', existing_file))
+                #     except Exception as e:
+                #         bt.logging.error(f"Error deleting existing WAV file: {e}")
+                return cloned_file_path
         except Exception as e:
             pass
             # bt.logging.info(f"Error processing speech output : {e}")
