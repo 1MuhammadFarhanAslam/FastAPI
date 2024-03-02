@@ -239,6 +239,7 @@ class VoiceCloningService(AIModelService):
         try:
             if response is not None and response.clone_output is not None:
                 output = response.clone_output
+                bt.logging.info(f"the output of the cloned voice issssssssssssssssssssssssssssssssssssssss: {output}")
                 # Convert the list to a tensor
                 clone_tensor = torch.Tensor(output)
 
