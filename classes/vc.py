@@ -248,7 +248,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"after going through the normalization process: {len(audio_data)}")
                 # Convert to 32-bit PCM
                 audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
-                bt.logging.info(f"after converting to 32-bit PCM: {len(audio_data_int)}")
+                bt.logging.info(f"after converting to 32-bit PCM: {audio_data_int}")
                 # Add an extra dimension to make it a 2D tensor
                 audio_data_int = audio_data_int.unsqueeze(0)
                 bt.logging.info(f"after adding an extra dimension in audio_data_int: ")
