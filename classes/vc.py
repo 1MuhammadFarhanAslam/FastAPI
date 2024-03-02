@@ -217,8 +217,8 @@ class VoiceCloningService(AIModelService):
                 )
                 # Process the responses if needed
                 self.process_voice_clone_responses(ax)
+                return self.response
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
-            return self.response
         except Exception as e:
             print(f"An error occurred while processing the voice clone: {e}")
 
@@ -266,7 +266,6 @@ class VoiceCloningService(AIModelService):
                 #         os.remove(os.path.join('/tmp', existing_file))
                 #     except Exception as e:
                 #         bt.logging.error(f"Error deleting existing WAV file: {e}")
-                bt.logging.info(f"Voice Clone output has been successfully processed and saved to {cloned_file_path}")
                 return cloned_file_path
         except Exception as e:
             pass

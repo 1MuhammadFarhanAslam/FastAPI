@@ -226,14 +226,14 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             bt.logging.info(f"prompt axon here: {axon}")
 
             try:
-                response = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=filtered_axons)
+                response = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=axon)
             except Exception as e:
                 logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
-            bt.logging.info(f"____________________________________ response ____________________________________ : {response}")
+            bt.logging.info(f"____________________________________ response ____________________________________ : {len(response)}")
 
             # Process the response
             audio_data = vc_api.handle_clone_output(axon, response)
-            bt.logging.info(f" ____________________________________ Audio data ____________________________________ : {audio_data}")
+            bt.logging.info(f" ____________________________________ Audio data ____________________________________ : {len(audio_data)}")
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
