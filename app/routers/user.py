@@ -228,6 +228,7 @@ async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile]
 
             # Process the response
             audio_data = vc_api.handle_clone_output(axon, response)
+            bt.logging.info(f" ____________________________________ Audio data ____________________________________ : {audio_data}")
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
