@@ -209,6 +209,7 @@ async def vc_service(request: VCRequest, user: User = Depends(get_current_active
             # if file_type not in allowed_audio_types:
             #     raise HTTPException(status_code=400, detail="Uploaded file must be an audio file.")
             # Get filtered axons
+            bt.logging.info(f"request prompt request prompt request prompt request prompt request prompt request prompt request prompt request prompt ")
             filtered_axons = vc_api.get_filtered_axons()
             bt.logging.info(f"Filtered axons: {filtered_axons}")
 
