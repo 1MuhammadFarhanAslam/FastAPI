@@ -156,7 +156,7 @@ class MusicGenerationService(AIModelService):
 
 
     def process_response(self, axon, response, prompt):
-        try:
+            music_output = response.music_output
             if response is not None and isinstance(response, lib.protocol.MusicGeneration) and response.music_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received music output from {axon.hotkey}")
                 self.handle_music_output(axon, music_output, prompt, response.model_name)
@@ -167,8 +167,6 @@ class MusicGenerationService(AIModelService):
             else:
                 pass
             return music_output
-        except Exception as e:
-            bt.logging.error(f'An error occurred while handling speech output: {e}')
 
 
     def get_duration(self, wav_file_path):
@@ -200,40 +198,23 @@ class MusicGenerationService(AIModelService):
                 output_path = os.path.join(self.ttm_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
             else:
                 # After saving the audio file
-                output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
-                bt.logging.info(f"Saving music data to 2nd {output_path}")
+                output_path = os.path.join('/tmp', f'output_music_{axon.hotkey}.wav')
+                sampling_rate = 32000
+                torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+                bt.logging.info(f"Saved audio file to {output_path}")
 
-            #     # Calculate the duration
-            #     duration = self.get_duration(output_path)
-            #     token = duration * 50.2
-            #     bt.logging.info(f"The duration of the audio file is {duration} seconds.")
-            # if token < self.duration:
-            #     bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
-            #     self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
-            #     return
-            # else:
-            #     # Score the output and update the weights
-            #     score = self.score_output(output_path, prompt)
-            #     bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
-            #     self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
-
-            # Save the audio file
-            if model_name == "/root/facebook_m":
-                sampling_rate = 24000 
-            elif model_name == "elevenlabs/eleven": 
-                sampling_rate = 44000
+                # Calculate the duration
+                duration = self.get_duration(output_path)
+                token = duration * 50.2
+                bt.logging.info(f"The duration of the audio file is {duration} seconds.")
+            if token < self.duration:
+                bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
+                self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
             else:
-                sampling_rate = 16000
-            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
-            bt.logging.info(f"Saved music file to {output_path}")
-            print(f"Saved music file to {output_path}")
-
-            # Score the output and update the weights
-            score = self.score_output(output_path, prompt)
-            bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
-            self.update_score(axon, score, service="Text-To-Speech", ax=self.filtered_axon)
-            bt.logging.info(f"Scores after update in TTM: {self.scores}")
-            return output_path
+                # Score the output and update the weights
+                score = self.score_output(output_path, prompt)
+                bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
+                self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
         except Exception as e:
             bt.logging.error(f"Error processing speech output: {e}")
 
