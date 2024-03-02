@@ -147,7 +147,7 @@ class MusicGenerationService(AIModelService):
         )
         return responses
     
-    async def process_responses(self,filtered_axons, responses, prompt):
+    def process_responses(self,filtered_axons, responses, prompt):
         for axon, response in zip(filtered_axons, responses):
             if response is not None and isinstance(response, lib.protocol.MusicGeneration):
                 self.process_response(axon, response, prompt)
@@ -156,17 +156,18 @@ class MusicGenerationService(AIModelService):
 
 
     def process_response(self, axon, response, prompt):
+        try:
             music_output = response.music_output
             if response is not None and isinstance(response, lib.protocol.MusicGeneration) and response.music_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received music output from {axon.hotkey}")
-                self.handle_music_output(axon, music_output, prompt, response.model_name)
-                music_output = response.music_output
+                music_file = self.handle_music_output(axon, music_output, prompt, response.model_name)
             elif response.dendrite.status_code != 403:
                 self.punish(axon, service="Text-To-Music", punish_message=response.dendrite.status_message)
-                bt.logging.error(f"Received error from {axon.hotkey}: {response.dendrite.status_message}")
             else:
                 pass
-            return music_output
+            return music_file
+        except Exception as e:
+            bt.logging.error(f'An error occurred while handling speech output: {e}')
 
 
     def get_duration(self, wav_file_path):
@@ -180,18 +181,14 @@ class MusicGenerationService(AIModelService):
         try:
             # Convert the list to a tensor
             speech_tensor = torch.Tensor(music_output)
-            bt.logging.info(f"music output length: {len(music_output)}")
             # Normalize the speech data
             audio_data = speech_tensor / torch.max(torch.abs(speech_tensor))
-            bt.logging.info(f"music data length: {len(audio_data)}")
 
             # Convert to 32-bit PCM
             audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
-            bt.logging.info(f"music data length after conversion: {len(audio_data_int)}")
 
             # Add an extra dimension to make it a 2D tensor
             audio_data_int = audio_data_int.unsqueeze(0)
-            bt.logging.info(f"Music data length after adding dimension: {len(audio_data_int)}")
 
             # Save the audio data as a .wav file
             if self.islocaltts:
@@ -215,6 +212,8 @@ class MusicGenerationService(AIModelService):
                 score = self.score_output(output_path, prompt)
                 bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
                 self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
+                return output_path
+
         except Exception as e:
             bt.logging.error(f"Error processing speech output: {e}")
 
