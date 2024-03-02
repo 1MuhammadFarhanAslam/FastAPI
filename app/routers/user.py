@@ -25,6 +25,7 @@ from os.path import exists
 import os
 import torchaudio
 from typing import Annotated
+import json
 
 
 
@@ -37,9 +38,6 @@ vc_api = VC_API()
 
 # Define a Pydantic model for the request body
 class TTSMrequest(BaseModel):
-    prompt: str 
-
-class VCRequest(BaseModel):
     prompt: str 
 
 @router.post("/change_password", response_model=dict)
@@ -195,9 +193,10 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(request: VCRequest,  audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
+async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
+    request = json.loads(request)
     
     if user.roles:
         role = user.roles[0]
