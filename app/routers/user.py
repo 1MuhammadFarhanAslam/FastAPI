@@ -24,6 +24,7 @@ from mimetypes import guess_type
 from os.path import exists
 import os
 import torchaudio
+from typing import Annotated
 
 
 
@@ -194,7 +195,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(request: VCRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File()):
+async def vc_service(request: VCRequest,  audio_file: Annotated[bytes, File()], user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     
