@@ -6,7 +6,7 @@ alembic==1.13.1
 altair==5.2.0
 annotated-types==0.6.0
 ansible==6.7.0
-ansible-core==2.13.13
+ansible-core==2.15.9
 ansible-vault==2.1.0
 antlr4-python3-runtime==4.9.3
 anyascii==0.3.2
