@@ -68,6 +68,7 @@ class VC_API(VoiceCloningService):
             self.filtered_axon = filtered_uids
             bt.logging.info(f"Filtered axons in fastapi: {self.filtered_axon}")
             filtered_axons = [self.metagraph.axons[i] for i in [0,31]]
+            bt.logging.info(f"----------------------------------------- Filtered in vc_api ----------------------------------------- : {filtered_axons}")
         except Exception as e:
             print(f"An error occurred while filtering axons in fastapi: {e}")
             
