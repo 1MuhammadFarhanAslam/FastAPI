@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import Optional
 import numpy as np
 import logging
-from fastapi import Depends
+from fastapi import Depends, UploadFile, File
 from datetime import datetime
 from ..models import User, User
 from ..user_auth import get_current_active_user
@@ -27,6 +27,7 @@ import os
 router = APIRouter()
 tts_api = TTS_API()
 ttm_api = TTM_API()
+
 
 
 # Define a Pydantic model for the request body
@@ -183,20 +184,28 @@ async def ttm_service(request: TTSRequest, user: User = Depends(get_current_acti
     else:
         print("You do not have any roles assigned.")
         raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
-    
+     
 
 @router.post("/vc_service")
-def vc_service(user: User = Depends(get_current_active_user)):
+async def vc_service(request: TTSRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File(...)
+):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
+    
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
-            return {"message": f" {user.username}! Welcome to the Voice Clone service. enjoy your experience!"}
+            
+            # Process the uploaded file
+            contents = await audio_file.read()  # Read the contents of the uploaded file
+            # You can then do further processing with the file contents
+            
+            return {"message": f"{user.username}! Welcome to the Voice Clone service. Enjoy your experience!"}
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
-            raise HTTPException(status_code=403, detail="Your subscription have been expired or you does not have any access to Voice Chat service")
+            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
     else:
         print("You do not have any roles assigned.")
         raise HTTPException(status_code=403, detail="User does not have any roles assigned")
+
