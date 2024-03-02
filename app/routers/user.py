@@ -194,7 +194,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(request: VCRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File(...)):
+async def vc_service(request: VCRequest, user: User = Depends(get_current_active_user), audio_file: UploadFile = File()):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     
