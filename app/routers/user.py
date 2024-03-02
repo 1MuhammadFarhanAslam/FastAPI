@@ -222,12 +222,12 @@ async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile]
             bt.logging.info(f"Chosen axon: {axon}")
 
             # Use the prompt from the request in the query_network function
-            bt.logging.info(f"request prompt: {request.prompt}")
+            bt.logging.info(f"request prompt: {request}")
             bt.logging.info(f"request axon here: {axon}")
-            response = vc_api.generate_voice_clone(text_input=request.prompt, clone_input=temp_file_path, sample_rate=sample_rate, axon=axon)
+            response = vc_api.generate_voice_clone(text_input=request, clone_input=temp_file_path, sample_rate=sample_rate, axon=axon)
 
             # Process the response
-            audio_data = vc_api.handle_clone_output(axon, response, request.prompt)
+            audio_data = vc_api.handle_clone_output(axon, response, request)
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
