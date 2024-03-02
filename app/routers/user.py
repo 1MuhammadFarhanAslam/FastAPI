@@ -225,6 +225,7 @@ async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile]
             bt.logging.info(f"request prompt: {request}")
             bt.logging.info(f"request axon here: {axon}")
             response = vc_api.generate_voice_clone(text_input=request, clone_input=input_audio, sample_rate=sample_rate, api_axon=axon)
+            bt.logging.info(f"____________________________________ response ____________________________________ : {response}")
 
             # Process the response
             audio_data = vc_api.handle_clone_output(axon, response)
