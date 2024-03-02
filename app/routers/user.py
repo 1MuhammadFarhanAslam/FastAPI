@@ -203,14 +203,7 @@ async def vc_service(request: VCRequest,  audio_file: Optional[UploadFile] = Fil
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
-            # Check if the file is an audio file
-            # allowed_audio_types = ["audio/mpeg", "audio/wav", "audio/mp3"]  # Add more audio MIME types if needed
-            # file_type = guess_type(audio_file.filename)[0]
-            
-            # if file_type not in allowed_audio_types:
-            #     raise HTTPException(status_code=400, detail="Uploaded file must be an audio file.")
             # Get filtered axons
-            bt.logging.info(f"request prompt request prompt request prompt request prompt request prompt request prompt request prompt request prompt ")
             filtered_axons = vc_api.get_filtered_axons()
             bt.logging.info(f"Filtered axons: {filtered_axons}")
 
@@ -218,10 +211,11 @@ async def vc_service(request: VCRequest,  audio_file: Optional[UploadFile] = Fil
             if not filtered_axons:
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
-            # Process the uploaded file
-            contents = await audio_file.read()  # Read the contents of the uploaded file
             # Read the audio file and return its content
-            waveform, sample_rate = torchaudio.load(contents)
+            temp_file_path = f"temp_audio_file{audio_file.filename}"  # Generate a temporary file name
+            with open(temp_file_path, 'wb+') as f:
+                f.write(await audio_file.read())  # Write the contents to a temporary file
+            waveform, sample_rate = torchaudio.load(temp_file_path)  
             bt.logging.info(f" ========================================= Sample rate ========================================= : {sample_rate}")
 
             # Choose a TTS axon randomly
@@ -231,7 +225,7 @@ async def vc_service(request: VCRequest,  audio_file: Optional[UploadFile] = Fil
             # Use the prompt from the request in the query_network function
             bt.logging.info(f"request prompt: {request.prompt}")
             bt.logging.info(f"request axon here: {axon}")
-            response = vc_api.generate_voice_clone(text_input=request.prompt, clone_input=contents, sample_rate=sample_rate, axon=axon)
+            response = vc_api.generate_voice_clone(text_input=request.prompt, clone_input=temp_file_path, sample_rate=sample_rate, axon=axon)
 
             # Process the response
             audio_data = vc_api.handle_clone_output(axon, response, request.prompt)
