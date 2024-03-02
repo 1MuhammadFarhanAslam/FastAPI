@@ -209,7 +209,7 @@ class VoiceCloningService(AIModelService):
             bt.logging.info(f"____________________________________ the axon we are getting in api_axon ____________________________________: {api_axon}")
             bt.logging.info(f"____________________________________ Filtered Axons for Voice Cloning ____________________________________: {self.filtered_axons}")
             for ax in self.filtered_axons:
-                self.response = await self.dendrite.forward(
+                self.response = await self.dendrite.query(
                     ax,
                     lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate,hf_voice_id=self.hf_voice_id),
                     deserialize=True,
