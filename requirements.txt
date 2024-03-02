@@ -74,7 +74,7 @@ eth-utils==2.3.1
 exceptiongroup==1.2.0
 executing==2.0.1
 # -e git+https://github.com/pytorch/fairseq@3f0f20f2d12403629224347664b3e75c13b2c8e0#egg=fairseq
-fastapi==0.99.1
+fastapi==0.109.1
 ffmpy==0.3.1
 filelock==3.13.1
 flashy==0.0.2
