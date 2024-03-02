@@ -221,6 +221,7 @@ async def vc_service(request: VCRequest, user: User = Depends(get_current_active
             contents = await audio_file.read()  # Read the contents of the uploaded file
             # Read the audio file and return its content
             waveform, sample_rate = torchaudio.load(contents)
+            bt.logging.info(f" ========================================= Sample rate ========================================= : {sample_rate}")
 
             # Choose a TTS axon randomly
             axon = np.random.choice(filtered_axons)
