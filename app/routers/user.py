@@ -225,7 +225,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             bt.logging.info(f"prompt : {prompt}")
             bt.logging.info(f"prompt axon here: {axon}")
 
-            response = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=axon)
+            response = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=filtered_axons)
             bt.logging.info(f"____________________________________ response ____________________________________ : {response}")
 
             # Process the response
