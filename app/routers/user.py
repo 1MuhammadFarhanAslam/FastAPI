@@ -193,10 +193,10 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
+async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
-    request = json.loads(request)
+    prompt = json.loads(prompt)
     
     if user.roles:
         role = user.roles[0]
@@ -221,12 +221,12 @@ async def vc_service(request: str = Form(...),  audio_file: Optional[UploadFile]
             axon = np.random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}")
 
-            # Use the prompt from the request in the query_network function
-            bt.logging.info(f"request prompt: {request}")
-            bt.logging.info(f"request axon here: {axon}")
-            bt.logging.info(f"____________________________________ input audio ____________________________________ : {input_audio}")
-            response = vc_api.generate_voice_clone(request, input_audio, sample_rate)
-            bt.logging.info(f"____________________________________ response ____________________________________ : {response}")
+            # Use the prompt from the prompt in the query_network function
+            bt.logging.info(f"prompt : {prompt}")
+            bt.logging.info(f"prompt axon here: {axon}")
+
+            response = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=axon)
+            bt.logging.info(f"____________________________________ response ____________________________________ : {prompt}")
 
             # Process the response
             audio_data = vc_api.handle_clone_output(axon, response)
