@@ -206,6 +206,8 @@ class VoiceCloningService(AIModelService):
     async def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None):
         try:
             self.filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
+            bt.logging.info(f" the axon we are getting in api_axon: {api_axon}")
+            bt.logging.info(f"Filtered Axons for Voice Cloning: {self.filtered_axons}")
             for ax in self.filtered_axons:
                 self.response = await self.dendrite.forward(
                     ax,
