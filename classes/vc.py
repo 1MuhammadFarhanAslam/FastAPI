@@ -245,19 +245,26 @@ class VoiceCloningService(AIModelService):
 
                 # Normalize the speech data
                 audio_data = clone_tensor / torch.max(torch.abs(clone_tensor))
+                bt.logging.info(f"after going through the normalization process: {len(audio_data)}")
                 # Convert to 32-bit PCM
                 audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
+                bt.logging.info(f"after converting to 32-bit PCM: {len(audio_data_int)}")
                 # Add an extra dimension to make it a 2D tensor
                 audio_data_int = audio_data_int.unsqueeze(0)
+                bt.logging.info(f"after adding an extra dimension in audio_data_int: ")
                 if response.model_name == "elevenlabs/eleven":
                     sampling_rate = 44000
                 else:
                     sampling_rate = 24000
                 file = self.filename.split(".")[0]
+                bt.logging.info(f"the file name issssssssssssssssssss: {file}")
                 cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
+                bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
                 # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
                 self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axon)
