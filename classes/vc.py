@@ -208,15 +208,15 @@ class VoiceCloningService(AIModelService):
             self.filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
             bt.logging.info(f"____________________________________ the axon we are getting in api_axon ____________________________________: {api_axon}")
             bt.logging.info(f"____________________________________ Filtered Axons for Voice Cloning ____________________________________: {self.filtered_axons}")
-            for ax in self.filtered_axons:
-                self.response = await self.dendrite.forward(
-                    ax,
-                    lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
-                    deserialize=True,
-                    timeout=150
-                )
-                # Process the responses if needed
-                self.process_voice_clone_responses(ax)
+            # for ax in self.filtered_axons:
+            self.response = await self.dendrite.forward(
+                self.filtered_axons,
+                lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
+                deserialize=True,
+                timeout=150
+            )
+            # Process the responses if needed
+            self.process_voice_clone_responses(self.filtered_axons)
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
             return self.response
         except Exception as e:
