@@ -131,17 +131,23 @@ class AIModelService:
 
     def update_score(self, axon, new_score, service, ax):
             try:
+                print(f"+++++++++++++++++++++++++++++ Type of axon: {type(axon)}, axon: {axon}")
+                print(f"+++++++++++++++++++++++++++++ Type of service: {type(service)}, service: {service}")
+                print(f"+++++++++++++++++++++++++++++ Type of new_score: {type(new_score)}, new_score: {new_score}")
+                print(f"+++++++++++++++++++++++++++++ Type of self.config.alpha: {type(self.config.alpha)}, alpha: {self.config.alpha}")
+                print(f"+++++++++++++++++++++++++++++ Type of self.scores: {type(self.scores)}, scores: {self.scores}")
+
                 uids = self.metagraph.uids.tolist()
                 zipped_uids = list(zip(uids, self.metagraph.axons))
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
                 if uid_index in ax:
-                    alpha = 0.3
-                    self.scores[0] = alpha * self.scores[0] * (1 - alpha) * new_score * 0.0
+                    alpha = self.config.alpha
+                    self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
 
                 else:
-                    alpha = 0.3
-                    self.scores[0] = alpha * self.scores[0] + (1 - alpha) * new_score
-                    # bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[0]}")
+                    alpha = self.config.alpha
+                    self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
+                    bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
                 print(f"An error occurred while updating the score the end of the function: {e}")
 
