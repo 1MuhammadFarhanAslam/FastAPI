@@ -152,10 +152,10 @@ class AIModelService:
                         self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
                     except Exception as e:
                         print(f"An error occurred while updating the score in update_score functon. yaha ip address wala nahi hai: {e}")
-                        
+
                     bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
-                print(f"An error occurred while updating the score: {e}")
+                print(f"An error occurred while updating the score - checkin if the error is coming from here or not: {e}")
 
 
     def punish(self, axon, service, punish_message):
