@@ -137,14 +137,24 @@ class AIModelService:
                 print(f"+++++++++++++++++++++++++++++ Type of self.config.alpha: {type(self.config.alpha)}, alpha: {self.config.alpha}")
                 print(f"+++++++++++++++++++++++++++++ Type of self.scores: {type(self.scores)}, scores: {self.scores}")
 
+                if not hasattr(axon, 'hotkey'):
+                    raise TypeError("axon must be an object with a 'hotkey' attribute")
+
+                if not isinstance(service, str):
+                    raise TypeError("service must be a string")
+
                 uids = self.metagraph.uids.tolist()
                 zipped_uids = list(zip(uids, self.metagraph.axons))
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
                 if uid_index in ax:
+                    if not isinstance(self.config.alpha, (float, int)):
+                        raise TypeError("alpha must be a float or an integer")
                     alpha = self.config.alpha
                     self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
 
                 else:
+                    if not isinstance(self.config.alpha, (float, int)):
+                        raise TypeError("alpha must be a float or an integer")
                     alpha = self.config.alpha
                     self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
                     bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
