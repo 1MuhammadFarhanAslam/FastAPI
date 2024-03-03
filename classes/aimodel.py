@@ -134,15 +134,25 @@ class AIModelService:
                 bt.logging.info(f"------------------- the axon we are getting in axon is ------------------- : {axon}")
                 bt.logging.info(f"___________________ the axon we are getting in ax is ___________________ : {ax}")
                 uids = self.metagraph.uids.tolist()
+                bt.logging.info(f"------------------- the uids we are getting in uids is ------------------- : {uids}")
                 zipped_uids = list(zip(uids, self.metagraph.axons))
+                bt.logging.info(f"------------------- the zipped_uids we are getting in zipped_uids is ------------------- : {zipped_uids}")
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
+                bt.logging.info(f"------------------- the uid_index we are getting in uid_index is ------------------- : {uid_index}")
                 if uid_index in ax:
                     alpha = self.config.alpha
-                    self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
+                    try:
+                        self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
+                    except Exception as e:
+                        print(f"An error occurred while updating the score in update_score functon. yaha ip address wala hai: {e}")
 
                 else:
                     alpha = self.config.alpha
-                    self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
+                    try:
+                        self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
+                    except Exception as e:
+                        print(f"An error occurred while updating the score in update_score functon. yaha ip address wala nahi hai: {e}")
+                        
                     bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
                 print(f"An error occurred while updating the score: {e}")
