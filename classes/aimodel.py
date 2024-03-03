@@ -137,6 +137,7 @@ class AIModelService:
                 bt.logging.error(f"Zippeddddddddddddddddddd UIDS: {zipped_uids}")
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
                 bt.logging.error(f"UID INDEXxxxxxxxxxxxxxxxxxxxxxx : {uid_index}")
+                bt.logging.error(f"axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: {ax}")
                 # if uid_index in ax:
                 #     alpha = self.config.alpha
                 #     bt.logging.error(f"alphaaaaaaaaaaaaaaaaaaa : {alpha}")
