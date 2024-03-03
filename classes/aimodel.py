@@ -135,13 +135,13 @@ class AIModelService:
                 zipped_uids = list(zip(uids, self.metagraph.axons))
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
                 if uid_index in ax:
-                    alpha = self.config.alpha
-                    self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
+                    alpha = 0.3
+                    self.scores[0] = alpha * self.scores[0] * (1 - alpha) * new_score * 0.0
 
                 else:
-                    alpha = self.config.alpha
-                    self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
-                    # bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
+                    alpha = 0.3
+                    self.scores[0] = alpha * self.scores[0] + (1 - alpha) * new_score
+                    # bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[0]}")
             except Exception as e:
                 print(f"An error occurred while updating the score the end of the function: {e}")
 
