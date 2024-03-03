@@ -131,6 +131,8 @@ class AIModelService:
 
     def update_score(self, axon, new_score, service, ax):
             try:
+                bt.logging.info(f"------------------- the service value is ------------------- : {service}")
+                bt.logging.info(f"------------------- the new_score value is ------------------- : {new_score}")
                 bt.logging.info(f"------------------- the axon we are getting in axon is ------------------- : {axon}")
                 bt.logging.info(f"___________________ the axon we are getting in ax is ___________________ : {ax}")
                 uids = self.metagraph.uids.tolist()
@@ -141,6 +143,7 @@ class AIModelService:
                 bt.logging.info(f"------------------- the uid_index we are getting in uid_index is ------------------- : {uid_index}")
                 if uid_index in ax:
                     alpha = self.config.alpha
+                    bt.logging.info(f"------------------- the alpha we are gitting in ax ------------------- : {self.scores[uid_index]}")
                     try:
                         self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
                     except Exception as e:
@@ -148,6 +151,7 @@ class AIModelService:
 
                 else:
                     alpha = self.config.alpha
+                    bt.logging.info(f"------------------- the alpha we are gitting in else form ------------------- : {self.scores[uid_index]}")
                     try:
                         self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
                     except Exception as e:
