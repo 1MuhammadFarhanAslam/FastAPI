@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 import os
