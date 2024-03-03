@@ -273,7 +273,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
                 score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
                 bt.logging.info(f"the score of the cloned file issssssssssssssssssss: {score}")
-                self.update_score(axon, score, service="Voice Cloning", ax=axon)
+                self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axons)
                 # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
                 # for existing_file in existing_wav_files:
                 #     try:
