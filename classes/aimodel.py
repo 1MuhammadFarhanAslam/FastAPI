@@ -131,35 +131,26 @@ class AIModelService:
 
     def update_score(self, axon, new_score, service, ax):
             try:
-                print(f"+++++++++++++++++++++++++++++ Type of axon: {type(axon)}, axon: {axon}")
-                print(f"+++++++++++++++++++++++++++++ Type of service: {type(service)}, service: {service}")
-                print(f"+++++++++++++++++++++++++++++ Type of new_score: {type(new_score)}, new_score: {new_score}")
-                print(f"+++++++++++++++++++++++++++++ Type of self.config.alpha: {type(self.config.alpha)}, alpha: {self.config.alpha}")
-                print(f"+++++++++++++++++++++++++++++ Type of self.scores: {type(self.scores)}, scores: {self.scores}")
-
-                if not hasattr(axon, 'hotkey'):
-                    raise TypeError("axon must be an object with a 'hotkey' attribute")
-
-                if not isinstance(service, str):
-                    raise TypeError("service must be a string")
-
                 uids = self.metagraph.uids.tolist()
+                bt.logging.error(f"UIDSsssssssssssssssssssssssss: {uids}")
                 zipped_uids = list(zip(uids, self.metagraph.axons))
+                bt.logging.error(f"Zippeddddddddddddddddddd UIDS: {zipped_uids}")
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
+                bt.logging.error(f"UID INDEXxxxxxxxxxxxxxxxxxxxxxx : {uid_index}")
                 if uid_index in ax:
-                    if not isinstance(self.config.alpha, (float, int)):
-                        raise TypeError("alpha must be a float or an integer")
                     alpha = self.config.alpha
+                    bt.logging.error(f"alphaaaaaaaaaaaaaaaaaaa : {alpha}")
                     self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
+                    bt.logging.error(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
 
                 else:
-                    if not isinstance(self.config.alpha, (float, int)):
-                        raise TypeError("alpha must be a float or an integer")
                     alpha = self.config.alpha
+                    bt.logging.error(f"alphaaaaaaaaaaaaaaaaaaa not ip walay : {alpha}")
                     self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
+                    bt.logging.error(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
                     bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
-                print(f"An error occurred while updating the score the end of the function: {e}")
+                print(f"An error occurred while updating the score: {e}")
 
 
     def punish(self, axon, service, punish_message):
