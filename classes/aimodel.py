@@ -131,49 +131,19 @@ class AIModelService:
 
     def update_score(self, axon, new_score, service, ax):
             try:
-                bt.logging.info(f"------------------- the service value is ------------------- : {service}")
-                bt.logging.info(f"------------------- the new_score value is ------------------- : {new_score}")
-                bt.logging.info(f"------------------- the axon we are getting in axon is ------------------- : {axon}")
-                bt.logging.info(f"___________________ the axon we are getting in ax is ___________________ : {ax}")
-                try:
-                    uids = self.metagraph.uids.tolist()
-                except Exception as e:
-                    bt.logging.error(f"An error occurred while getting the uids: {e}")
-                bt.logging.info(f"------------------- the uids we are getting in uids is ------------------- : {uids}")
-                try:
-                    zipped_uids = list(zip(uids, self.metagraph.axons))
-                except Exception as e:
-                    bt.logging.error(f"An error occurred while zipping the uids: {e}")
-                bt.logging.info(f"------------------- the zipped_uids we are getting in zipped_uids is ------------------- : {zipped_uids}")
-                try:
-                    uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
-                except Exception as e:
-                    bt.logging.error(f"An error occurred while getting the uid_index: {e}")
-                bt.logging.info(f"------------------- the uid_index we are getting in uid_index is ------------------- : {uid_index}")
-                try:
-                    if uid_index in ax:
-                        alpha = self.config.alpha
-                        bt.logging.info(f"------------------- the alpha we are gitting in ax ------------------- : {self.scores[uid_index]}")
-                        try:
-                            self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
-                        except Exception as e:
-                            print(f"An error occurred while updating the score in update_score functon. yaha ip address wala hai: {e}")
-                except Exception as e:
-                    print(f"An error occurred while updating the score - checkin if the : {e}")
-                else:
-                    try:
-                        alpha = self.config.alpha
-                        bt.logging.info(f"------------------- the alpha we are gitting in else form ------------------- : {self.scores[uid_index]}")
-                        try:
-                            self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
-                        except Exception as e:
-                            print(f"An error occurred while updating the score in update_score functon. yaha ip address wala nahi hai: {e}")
+                uids = self.metagraph.uids.tolist()
+                zipped_uids = list(zip(uids, self.metagraph.axons))
+                uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
+                if uid_index in ax:
+                    alpha = self.config.alpha
+                    self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
 
-                        bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
-                    except Exception as e:
-                        print(f"An error occurred while updating the score - checkin if the error is coming from here or not blah blah blah: {e}")
+                else:
+                    alpha = self.config.alpha
+                    self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
+                    # bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
-                print(f"An error occurred while updating the score - checkin if the error is coming from here or not: {e}")
+                print(f"An error occurred while updating the score: {e}")
 
 
     def punish(self, axon, service, punish_message):
