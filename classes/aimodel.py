@@ -131,8 +131,8 @@ class AIModelService:
 
     def update_score(self, axon, new_score, service, ax):
             try:
-                bt.loggin.info(f"------------------- the axon we are getting in axon is ------------------- : {axon}")
-                bt.loggin.info(f"___________________ the axon we are getting in ax is ___________________ : {ax}")
+                bt.logging.info(f"------------------- the axon we are getting in axon is ------------------- : {axon}")
+                bt.logging.info(f"___________________ the axon we are getting in ax is ___________________ : {ax}")
                 uids = self.metagraph.uids.tolist()
                 zipped_uids = list(zip(uids, self.metagraph.axons))
                 uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
