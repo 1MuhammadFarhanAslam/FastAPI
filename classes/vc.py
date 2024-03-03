@@ -217,8 +217,8 @@ class VoiceCloningService(AIModelService):
                 )
                 # Process the responses if needed
                 self.process_voice_clone_responses(ax)
-                return self.response
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
+            return self.response
         except Exception as e:
             print(f"An error occurred while processing the voice clone: {e}")
 
