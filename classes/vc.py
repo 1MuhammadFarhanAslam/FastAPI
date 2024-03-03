@@ -103,7 +103,7 @@ class VoiceCloningService(AIModelService):
             vc_voice = random.choice(self.audio_files)
             audio_array = vc_voice['array']
             sampling_rate = vc_voice['sampling_rate']
-            self.hf_voice_id = vc_voice['path'].split("/")[-1][:10]
+            self.hf_voice_id = "faltu_name" # vc_voice['path'].split("/")[-1][:10]
             sf.write('input_file.wav', audio_array, sampling_rate)
             self.audio_file_path = os.path.join(audio_subnet_path, "input_file.wav")
             waveform, _ = torchaudio.load(self.audio_file_path)
@@ -258,14 +258,14 @@ class VoiceCloningService(AIModelService):
                     sampling_rate = 24000
                 file = self.filename.split(".")[0]
                 bt.logging.info(f"the file name issssssssssssssssssss: {file}")
-                # cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
-                cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
-                torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
-                bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
+                    cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     clone_file = cloned_file_path
-                # torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
+                    bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
+                torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
                 # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
@@ -277,7 +277,7 @@ class VoiceCloningService(AIModelService):
                 #     except Exception as e:
                 #         bt.logging.error(f"Error deleting existing WAV file: {e}")
                 bt.logging.info(f"the cloned file have been saved successfully: {clone_file}")
-            return cloned_file_path
+            return clone_file
         except Exception as e:
             pass
             # bt.logging.info(f"Error processing speech output : {e}")
