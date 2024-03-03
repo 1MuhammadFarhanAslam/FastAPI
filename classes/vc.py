@@ -267,7 +267,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:6] +'_.wav' )
-                    input_file_path = os.path.join('/tmp', 'input_'+ axon.hotkey[:6] +'_.wav' )
+                    input_file_path = os.path.join('/tmp', 'input_.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     torchaudio.save(input_file_path, src=input_data_int, sample_rate=sampling_rate)
                     # Score the output and update the weights
