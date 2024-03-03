@@ -262,11 +262,15 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
-                    torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
-                    clone_file = cloned_file_path
                     bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
+                    torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
+                    bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
+                    clone_file = cloned_file_path
+                    bt.logging.info(f"the cloned file path sent to the variable clone_file: {clone_file}")
                     self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axon)
+                    bt.logging.info(f"the cloned file have been saved successfully: {clone_file}")
                     score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
+                    bt.logging.info(f"the cloned file will be getting send to return: ")
                     return clone_file
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
