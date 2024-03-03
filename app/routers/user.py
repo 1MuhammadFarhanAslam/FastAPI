@@ -232,7 +232,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
 
             # Process the response
             try:
-                audio_data = vc_api.handle_clone_output(axon, response)
+                audio_data = vc_api.handle_clone_output(axon, response, prompt, input_audio)
             except Exception as e:
                 logging.error(f"the handle_clone_output functions is not being called due to the error with {e}")
             bt.logging.info(f" ____________________________________ Audio data ____________________________________ : {audio_data}")
