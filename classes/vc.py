@@ -275,7 +275,7 @@ class VoiceCloningService(AIModelService):
                 score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
                 bt.logging.info(f"the score of the cloned file issssssssssssssssssss: {score}")
                 try:
-                    self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axons)
+                    self.update_score(axon, score, service="Voice Cloning", ax=axon)
                 except Exception as e:
                     bt.logging.error(f"Error updating the score in vc.py: {e}")
                 # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
