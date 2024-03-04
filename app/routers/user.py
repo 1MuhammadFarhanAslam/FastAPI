@@ -26,7 +26,6 @@ import os
 import torchaudio
 from typing import Annotated
 import json
-import random
 
 
 
@@ -218,9 +217,8 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
             # Choose a TTS axon randomly
-            # Choose a VC axon randomly
-            uid, axon = random.choice(filtered_axons)
-            bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
+            axon = filtered_axons[1]
+            uid = filtered_axons[0] 
             bt.logging.info(f"Chosen axon: {axon}")
 
             try:
@@ -236,8 +234,6 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
 
             # Set the appropriate content type based on the file extension
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
-
-
 
             # Return the audio file
             return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
