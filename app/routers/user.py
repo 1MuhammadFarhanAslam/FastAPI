@@ -194,14 +194,14 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(prompt: str = Form(...), audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
+async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] = File(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     prompt = json.loads(prompt)
     
     if user.roles:
         role = user.roles[0]
-        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled:
+        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
             # Get filtered axons
             filtered_axons = vc_api.get_filtered_axons()
@@ -209,39 +209,44 @@ async def vc_service(prompt: str = Form(...), audio_file: Optional[UploadFile] =
 
             # Check if there are axons available
             if not filtered_axons:
-                raise HTTPException(status_code=500, detail="No axons available for Voice Cloning.")
+                raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
-            # Process the audio file
-            temp_file_path = f"temp_audio_file_{audio_file.filename}"  # Generate a unique temporary file name
+            # Read the audio file and return its content
+            temp_file_path = f"temp_audio_file{audio_file.filename}"  # Generate a temporary file name
             with open(temp_file_path, 'wb+') as f:
-                f.write(await audio_file.read())  # Write the contents to the temporary file
-            waveform, sample_rate = torchaudio.load(temp_file_path)
+                f.write(await audio_file.read())  # Write the contents to a temporary file
+            waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
-
+            # Choose a TTS axon randomly
             # Choose a VC axon randomly
             uid, axon = random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
+            bt.logging.info(f"Chosen axon: {axon}")
 
-            audio_data = None  # Define audio_data outside try-except scope
             try:
-                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
+                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=list(axon), input_file=temp_file_path)
             except Exception as e:
-                logging.error(f"The generate_voice_clone function is not being called due to the error: {e}")
-                raise HTTPException(status_code=500, detail=f"Error in voice cloning: {e}")
-
-            # Ensure audio_data has been set
-            if not audio_data:
-                raise HTTPException(status_code=500, detail="Failed to generate voice clone.")
-
-            # Determine the content type based on the file extension
+                logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
             file_extension = os.path.splitext(audio_data)[1].lower()
+            bt.logging.info(f"audio_file_path: {audio_data}")
+            # Process each audio file path as needed
+
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
+
+            # Set the appropriate content type based on the file extension
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
-            # Return the UID and the audio file
+
+
+            # Return the audio file
             return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+
+            
         else:
-            print("You do not have access to the Voice Clone service or your subscription has expired.")
+            print("You do not have access to Voice Clone service or subscription is expired.")
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
     else:
         print("You do not have any roles assigned.")
-        raise HTTPException(status_code=403, detail="User does not have any roles assigned.")
+        raise HTTPException(status_code=403, detail="User does not have any roles assigned")
+
