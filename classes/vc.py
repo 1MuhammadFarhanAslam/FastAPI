@@ -80,7 +80,7 @@ class VoiceCloningService(AIModelService):
             try:
                 new_tasks = await self.main_loop_logic(step)
                 running_tasks.extend(new_tasks)
-
+                bt.logging.error(f"The Current step for vc is ------------------------- : {step}")
                 # Periodically check and clean up completed tasks
                 running_tasks = [task for task in running_tasks if not task.done()]
                 step += 1
@@ -93,7 +93,7 @@ class VoiceCloningService(AIModelService):
                 traceback.print_exc()
 
     async def process_huggingface_prompts(self, step):
-        if step % 45 == 0:
+        if step % 3 == 0:
             async with self.lock:
                 bt.logging.info(f"--------------------------------- Prompt and voices are being used from HuggingFace Dataset for Voice Clone at Step: {step} ---------------------------------")
                 self.filename = ""
