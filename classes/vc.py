@@ -208,17 +208,15 @@ class VoiceCloningService(AIModelService):
     async def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None, input_file=None):
         try:
             self.filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
-            bt.logging.info(f"____________________________________ the axon we are getting in api_axon ____________________________________: {api_axon}")
-            bt.logging.info(f"____________________________________ Filtered Axons for Voice Cloning ____________________________________: {self.filtered_axons}")
-            for ax in self.filtered_axons:
-                self.response = await self.dendrite.forward(
-                    ax,
-                    lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
-                    deserialize=True,
-                    timeout=150
-                )
-                # Process the responses if needed
-                processed_vc_file = self.process_voice_clone_responses(ax, text_input, input_file)
+            # for ax in self.filtered_axons:
+            self.response = self.dendrite.query(
+                self.filtered_axons,
+                lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
+                deserialize=True,
+                timeout=150
+            )
+            # Process the responses if needed
+            processed_vc_file = self.process_voice_clone_responses(self.filtered_axons, text_input, input_file)
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
             return processed_vc_file
         except Exception as e:
@@ -226,14 +224,15 @@ class VoiceCloningService(AIModelService):
 
     def process_voice_clone_responses(self, ax, text_input, input_file=None):
         try:
-            if self.response is not None and isinstance(self.response, lib.protocol.VoiceClone) and self.response.clone_output is not None and self.response.dendrite.status_code == 200:
-                bt.logging.success(f"Received Voice Clone output from {ax.hotkey}")
-                vc_file = self.handle_clone_output(ax, self.response, prompt=text_input, input_file=input_file)
-                return vc_file
-            elif self.response.dendrite.status_code != 403:
-                self.punish(ax, service="Voice Cloning", punish_message=self.response.dendrite.status_message)
-            else:
-                pass
+            for self.response in ax:
+                if self.response is not None and isinstance(self.response, lib.protocol.VoiceClone) and self.response.clone_output is not None and self.response.dendrite.status_code == 200:
+                    bt.logging.success(f"Received Voice Clone output from {ax.hotkey}")
+                    vc_file = self.handle_clone_output(ax, self.response, prompt=text_input, input_file=input_file)
+                    return vc_file
+                elif self.response.dendrite.status_code != 403:
+                    self.punish(ax, service="Voice Cloning", punish_message=self.response.dendrite.status_message)
+                else:
+                    pass
         except Exception as e:
             print(f"An error occurred while processing voice clone responses: {e}")
 
