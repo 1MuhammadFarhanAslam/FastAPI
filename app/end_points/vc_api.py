@@ -36,6 +36,7 @@ class VC_API(VoiceCloningService):
         if self.filtered_axons:  # Check if the list is not empty
             item_to_return = self.filtered_axons[self.current_index % len(self.filtered_axons)]
             self.current_index += 1  # Increment for next call
-            return item_to_return
+            bt.logging.debug(f"Returning axon: {item_to_return}")
+            return [item_to_return]
         else:
             return None  # Return None if there are no queryable axons
