@@ -216,18 +216,18 @@ class VoiceCloningService(AIModelService):
                 timeout=150
             )
             # Process the responses if needed
-            processed_vc_file = self.process_voice_clone_responses(self.filtered_axons, text_input, input_file)
+            processed_vc_file = self.process_voice_clone_responses(text_input, input_file)
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
             return processed_vc_file
         except Exception as e:
             print(f"An error occurred while processing the voice clone: {e}")
 
-    def process_voice_clone_responses(self, ax, text_input, input_file=None):
+    def process_voice_clone_responses(self, text_input, input_file=None):
         try:
             for response in self.responses:
                 if response is not None and isinstance(response, lib.protocol.VoiceClone) and response.clone_output is not None and response.dendrite.status_code == 200:
                     bt.logging.success(f"Received Voice Clone output from {response.hotkey}")
-                    vc_file = self.handle_clone_output(response, self.responses, prompt=text_input, input_file=input_file)
+                    vc_file = self.handle_clone_output(response, prompt=text_input, input_file=input_file)
                     return vc_file
                 elif response.dendrite.status_code != 403:
                     self.punish(response, service="Voice Cloning", punish_message=response.dendrite.status_message)
@@ -236,7 +236,7 @@ class VoiceCloningService(AIModelService):
         except Exception as e:
             print(f"An error occurred while processing voice clone responses: {e}")
 
-    def handle_clone_output(self, axon, response, prompt=None, input_file=None):
+    def handle_clone_output(self, response, prompt=None, input_file=None):
         try:
             if response is not None and response.clone_output is not None:
                 output = response.clone_output
@@ -261,7 +261,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the file name issssssssssssssssssss: {file}")
                 # cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 # if file is None or file == "":
-                cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                cloned_file_path = os.path.join('/tmp', '_cloned_'+ response.hotkey[:6] +'_.wav' )
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 # torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
@@ -275,7 +275,7 @@ class VoiceCloningService(AIModelService):
                 score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
                 bt.logging.info(f"the score of the cloned file issssssssssssssssssss: {score}")
                 try:
-                    self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axons)
+                    self.update_score(response, score, service="Voice Cloning", ax=self.filtered_axons)
                 except Exception as e:
                     bt.logging.error(f"Error updating the score in vc.py: {e}")
                 # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
