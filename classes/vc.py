@@ -227,7 +227,7 @@ class VoiceCloningService(AIModelService):
             for axon, response in zip(filtered_axons, self.responses):
                 if response is not None and isinstance(response, lib.protocol.VoiceClone) and response.clone_output is not None and response.dendrite.status_code == 200:
                     bt.logging.success(f"Received Voice Clone output from {axon.hotkey}")
-                    vc_file = self.handle_clone_output(response, prompt=text_input, input_file=input_file)
+                    vc_file = self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
                     return vc_file
                 elif response.dendrite.status_code != 403:
                     self.punish(axon, service="Voice Cloning", punish_message=response.dendrite.status_message)
@@ -236,7 +236,7 @@ class VoiceCloningService(AIModelService):
         except Exception as e:
             print(f"An error occurred while processing voice clone responses: {e}")
 
-    def handle_clone_output(self, response, prompt=None, input_file=None):
+    def handle_clone_output(self, response, axon, prompt=None, input_file=None):
         try:
             if response is not None and response.clone_output is not None:
                 output = response.clone_output
@@ -261,7 +261,7 @@ class VoiceCloningService(AIModelService):
                 bt.logging.info(f"the file name issssssssssssssssssss: {file}")
                 # cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 # if file is None or file == "":
-                cloned_file_path = os.path.join('/tmp', '_cloned_'+ response.hotkey[:6] +'_.wav' )
+                cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 bt.logging.info(f"the cloned file path issssssssssssssssssss: {cloned_file_path}")
                 # torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
