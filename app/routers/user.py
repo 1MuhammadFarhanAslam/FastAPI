@@ -238,7 +238,7 @@ async def vc_service(prompt: str = Form(...), audio_file: Optional[UploadFile] =
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
             # Return the UID and the audio file
-            return {"uid": uid, "file": FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))}
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
         else:
             print("You do not have access to the Voice Clone service or your subscription has expired.")
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
