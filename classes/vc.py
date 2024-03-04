@@ -230,7 +230,7 @@ class VoiceCloningService(AIModelService):
                     vc_file = self.handle_clone_output(response, prompt=text_input, input_file=input_file)
                     return vc_file
                 elif response.dendrite.status_code != 403:
-                    self.punish(response, service="Voice Cloning", punish_message=response.dendrite.status_message)
+                    self.punish(axon, service="Voice Cloning", punish_message=response.dendrite.status_message)
                 else:
                     pass
         except Exception as e:

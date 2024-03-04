@@ -155,6 +155,7 @@ class AIModelService:
 
     def punish(self, response, service, punish_message):
         '''Punish the response for returning an invalid response'''
+        uid_index = None
         try:
             uids = self.metagraph.uids.tolist()
             bt.logging.error(f"UIDS in punish: {uids}")
