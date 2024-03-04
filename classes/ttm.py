@@ -73,7 +73,7 @@ class MusicGenerationService(AIModelService):
 
         while True:
             try:
-                bt.logging.error(f"The Current step for TTS is ------------------------- : {step}")
+                bt.logging.error(f"The Current step for TTMMMM is ------------------------- : {step}")
                 await self.main_loop_logic(step)
                 step += 1
                 await asyncio.sleep(0.5)  # Adjust the sleep time as needed
