@@ -217,11 +217,12 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
             # Choose a TTS axon randomly
-            axon = np.random.choice(filtered_axons)
+            axon = filtered_axons[1]
+            uid = filtered_axons[0] 
             bt.logging.info(f"Chosen axon: {axon}")
 
             try:
-                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=filtered_axons, input_file=temp_file_path)
+                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=list(axon), input_file=temp_file_path)
             except Exception as e:
                 logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
             file_extension = os.path.splitext(audio_data)[1].lower()

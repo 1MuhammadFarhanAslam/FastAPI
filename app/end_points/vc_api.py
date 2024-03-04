@@ -9,70 +9,33 @@ import lib
 class VC_API(VoiceCloningService):
     def __init__(self):
         super().__init__()
+        self.current_index = 0  # Initialize the current index
+        self.filtered_axons = self._generate_filtered_axons_list()  # Generate the initial list
 
-    def get_filtered_axons(self):
-        filtered_axons = []
+    def _generate_filtered_axons_list(self):
+        """Generate the list of filtered axons."""
         try:
             uids = self.metagraph.uids.tolist()
-            queryable_uids = (self.metagraph.total_stake >= 0)
-
-            queryable_uids = queryable_uids * torch.Tensor([
+            queryable_axons = (self.metagraph.total_stake >= 0).numpy() * torch.Tensor([
                 self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in uids
-            ])
-
-            queryable_uid = queryable_uids * torch.Tensor([
-                any(self.metagraph.neurons[uid].axon_info.ip == ip for ip in lib.BLACKLISTED_IPS) or
-                any(self.metagraph.neurons[uid].axon_info.ip.startswith(prefix) for prefix in lib.BLACKLISTED_IPS_SEG)
-                for uid in uids
-            ])
-
-            bt.logging.debug(f"Queryable uids in fastapi: {queryable_uids}")
+            ]).numpy()
+            bt.logging.debug(f"Queryable uids in fastapi: {queryable_axons}")
+            return [(uid, axon) for uid, axon in zip(uids, queryable_axons) if axon]
         except Exception as e:
-            print(f"An error occurred while filtering queryable uids in fastapi: {e}")
+            print(f"An error occurred while generating filtered axons list: {e}")
+            return []
 
-        try:
-            active_miners = torch.sum(queryable_uids)
-            dendrites_per_query = self.total_dendrites_per_query
+    def get_filtered_axons(self):
+        """Get the next item from the filtered axons list."""
+        # Regenerate the list if it was exhausted
+        if not self.filtered_axons:
+            self.filtered_axons = self._generate_filtered_axons_list()
+            self.current_index = 0  # Reset the index
 
-            if active_miners == 0:
-                active_miners = 1
-
-            if active_miners < self.total_dendrites_per_query * 3:
-                dendrites_per_query = int(active_miners / 3)
-            else:
-                dendrites_per_query = self.total_dendrites_per_query
-
-            bt.logging.debug(f"Dendrites per query in fastapi: {dendrites_per_query}")
-        except Exception as e:
-            print(f"An error occurred while dendrites per query calculation in fastapi : {e}")
-
-        try:
-            if dendrites_per_query < self.minimum_dendrites_per_query:
-                dendrites_per_query = self.minimum_dendrites_per_query
-
-            bt.logging.debug(f"Dendrites per query in fastapi 2nd time: {dendrites_per_query}")
-
-            zipped_uids = list(zip(uids, queryable_uids))
-            bt.logging.debug(f"Zipped uids in fastapi: {zipped_uids}")
-
-            zipped_uid = list(zip(uids, queryable_uid))
-            bt.logging.debug(f"Zipped uid in fastapi: {zipped_uid}")
-
-            filtered_zipped_uids = list(filter(lambda x: x[1], zipped_uids))
-            filtered_uids = [item[0] for item in filtered_zipped_uids] if filtered_zipped_uids else []
-            bt.logging.debug(f"Filtered uids in fastapi: {filtered_uids}")
-
-            filtered_zipped_uid = list(filter(lambda x: x[1], zipped_uid))
-            filtered_uid = [item[0] for item in filtered_zipped_uid] if filtered_zipped_uid else []
-
-            self.filtered_axon = filtered_uids
-            bt.logging.info(f"Filtered axons in fastapi: {self.filtered_axon}")
-            filtered_axons = [self.metagraph.axons[i] for i in [0,31]]
-            bt.logging.info(f"----------------------------------------- Filtered in vc_api ----------------------------------------- : {filtered_axons}")
-        except Exception as e:
-            print(f"An error occurred while filtering axons in fastapi: {e}")
-            
-
-        return filtered_axons # Return filtered axons list
-
-    
+        # Get the next item
+        if self.filtered_axons:  # Check if the list is not empty
+            item_to_return = self.filtered_axons[self.current_index % len(self.filtered_axons)]
+            self.current_index += 1  # Increment for next call
+            return item_to_return
+        else:
+            return None  # Return None if there are no queryable axons
