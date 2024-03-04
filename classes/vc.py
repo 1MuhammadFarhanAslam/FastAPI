@@ -57,7 +57,7 @@ class VoiceCloningService(AIModelService):
         ###################################### DIRECTORY STRUCTURE ###########################################
         self.filtered_axon = []
         self.filtered_axons = []
-        self.response = None
+        self.responses = None
         self.filename = ""
         self.audio_file_path = ""
         self.text_input = ""
@@ -209,7 +209,7 @@ class VoiceCloningService(AIModelService):
         try:
             self.filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
             # for ax in self.filtered_axons:
-            self.response = self.dendrite.query(
+            self.responses = self.dendrite.query(
                 self.filtered_axons,
                 lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
                 deserialize=True,
@@ -224,13 +224,13 @@ class VoiceCloningService(AIModelService):
 
     def process_voice_clone_responses(self, ax, text_input, input_file=None):
         try:
-            for self.response in ax:
-                if self.response is not None and isinstance(self.response, lib.protocol.VoiceClone) and self.response.clone_output is not None and self.response.dendrite.status_code == 200:
+            for response in self.responses:
+                if response is not None and isinstance(response, lib.protocol.VoiceClone) and response.clone_output is not None and response.dendrite.status_code == 200:
                     bt.logging.success(f"Received Voice Clone output from {ax.hotkey}")
-                    vc_file = self.handle_clone_output(ax, self.response, prompt=text_input, input_file=input_file)
+                    vc_file = self.handle_clone_output(ax, response, prompt=text_input, input_file=input_file)
                     return vc_file
-                elif self.response.dendrite.status_code != 403:
-                    self.punish(ax, service="Voice Cloning", punish_message=self.response.dendrite.status_message)
+                elif response.dendrite.status_code != 403:
+                    self.punish(ax, service="Voice Cloning", punish_message=response.dendrite.status_message)
                 else:
                     pass
         except Exception as e:
