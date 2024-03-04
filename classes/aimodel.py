@@ -129,26 +129,26 @@ class AIModelService:
         self.metagraph = self.subtensor.metagraph(self.config.netuid)
         bt.logging.info(f"Metagraph: {self.metagraph}")
 
-    def update_score(self, response, new_score, service, ax):
+    def update_score(self, axon, new_score, service, ax):
             try:
                 uids = self.metagraph.uids.tolist()
                 bt.logging.error(f"UIDSsssssssssssssssssssssssss: {uids}")
                 zipped_uids = list(zip(uids, self.metagraph.axons))
                 bt.logging.error(f"Zippeddddddddddddddddddd UIDS: {zipped_uids}")
-                uid_index = list(zip(*filter(lambda x: x[1] == response, zipped_uids)))[0][0]
+                uid_index = list(zip(*filter(lambda x: x[1] == axon, zipped_uids)))[0][0]
                 bt.logging.error(f"UID INDEXxxxxxxxxxxxxxxxxxxxxxx : {uid_index}")
                 bt.logging.error(f"axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: {ax}")
                 # if uid_index in ax:
                 #     alpha = self.config.alpha
                 #     bt.logging.error(f"alphaaaaaaaaaaaaaaaaaaa : {alpha}")
                 #     self.scores[uid_index] = alpha * self.scores[uid_index] * (1 - alpha) * new_score * 0.0
-                #     bt.logging.error(f"Updated score for {service} Hotkey {response.hotkey}: {self.scores[uid_index]}")
+                #     bt.logging.error(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
                 # # else:
                 alpha = self.config.alpha
                 bt.logging.error(f"alphaaaaaaaaaaaaaaaaaaa not ip walay : {alpha}")
                 self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * new_score
-                bt.logging.error(f"Updated score for {service} Hotkey {response.hotkey}: {self.scores[uid_index]}")
-                bt.logging.info(f"Updated score for {service} Hotkey {response.hotkey}: {self.scores[uid_index]}")
+                bt.logging.error(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
+                bt.logging.info(f"Updated score for {service} Hotkey {axon.hotkey}: {self.scores[uid_index]}")
             except Exception as e:
                 print(f"An error occurred while updating the score: {e}")
 
