@@ -224,7 +224,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             audio_data = None  # Define audio_data outside try-except scope
 
             try:
-                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=list(axon), input_file=temp_file_path)
+                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
             except Exception as e:
                 logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
             file_extension = os.path.splitext(audio_data)[1].lower()
