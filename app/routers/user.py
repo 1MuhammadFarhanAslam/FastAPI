@@ -26,6 +26,7 @@ import os
 import torchaudio
 from typing import Annotated
 import json
+import random
 
 
 
@@ -216,10 +217,11 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
                 f.write(await audio_file.read())  # Write the contents to a temporary file
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
-            # Choose a TTS axon randomly
-            axon = filtered_axons[1]
-            uid = filtered_axons[0] 
-            bt.logging.info(f"Chosen axon: {axon}")
+            # Choose a VC axon randomly
+            uid, axon = random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
+
+            audio_data = None  # Define audio_data outside try-except scope
 
             try:
                 audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=list(axon), input_file=temp_file_path)
