@@ -272,7 +272,10 @@ class VoiceCloningService(AIModelService):
                     # bt.logging.info(f"the cloned file path without the name is  issssssssssssssssssss: {cloned_file_path}")
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
-                score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
+                if input_file:
+                    score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
+                else:
+                    score = self.score_output(self.audio_file_path, cloned_file_path, prompt)
                 bt.logging.info(f"the score of the cloned file issssssssssssssssssss: {score}")
                 try:
                     self.update_score(axon, score, service="Voice Cloning", ax=axon)
