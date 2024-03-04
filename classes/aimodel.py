@@ -157,14 +157,27 @@ class AIModelService:
         '''Punish the response for returning an invalid response'''
         try:
             uids = self.metagraph.uids.tolist()
-            zipped_uids = list(zip(uids, self.metagraph.axons))
-            uid_index = list(zip(*filter(lambda x: x[1] == response, zipped_uids)))[0][0]
+            bt.logging.error(f"UIDS in punish: {uids}")
+            try:
+                zipped_uids = list(zip(uids, self.metagraph.axons))
+                bt.logging.error(f"Zipped UIDS in punish: {zipped_uids}")
+            except Exception as e:
+                print(f"An error occurred while zipping the uids: {e}")
+            try:
+                uid_index = list(zip(*filter(lambda x: x[1] == response, zipped_uids)))[0][0]
+                bt.logging.error(f"UID INDEX in punish: {uid_index}")
+            except Exception as e:
+                print(f"An error occurred while getting the uid index: {e}")
+
             alpha = self.config.alpha
-            self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * (-0.05)
-            if self.scores[uid_index] < 0:
-                self.scores[uid_index] = 0
-            # Log the updated score
-            bt.logging.info(f"Score after punishment for Hotkey {response.hotkey} using {service} is Punished  Due to {punish_message} : {self.scores[uid_index]}")
+            try:
+                self.scores[uid_index] = alpha * self.scores[uid_index] + (1 - alpha) * (-0.05)
+                if self.scores[uid_index] < 0:
+                    self.scores[uid_index] = 0
+                # Log the updated score
+                bt.logging.info(f"Score after punishment for Hotkey {response.hotkey} using {service} is Punished  Due to {punish_message} : {self.scores[uid_index]}")
+            except Exception as e:
+                print(f"An error occurred while punishing Score for the axon: {e}")
         except Exception as e:
             print(f"An error occurred while punishing the axon: {e}")
 
