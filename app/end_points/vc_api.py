@@ -15,15 +15,26 @@ class VC_API(VoiceCloningService):
     def _generate_filtered_axons_list(self):
         """Generate the list of filtered axons."""
         try:
+            # Convert the metagraph's UIDs to a list
             uids = self.metagraph.uids.tolist()
-            queryable_axons = (self.metagraph.total_stake >= 0).numpy() * torch.Tensor([
+            # Generate a boolean mask for queryable axons based on stake and IP address
+            queryable_axons_mask = (self.metagraph.total_stake >= 0).numpy() * torch.Tensor([
                 self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in uids
-            ]).numpy()
-            bt.logging.debug(f"Queryable uids in fastapi: {queryable_axons}")
-            return [(uid, axon) for uid, axon in zip(uids, queryable_axons) if axon]
+            ]).bool()
+
+            bt.logging.debug(f"Queryable uids in fastapi: {queryable_axons_mask}")
+            
+            # Filter the UIDs based on the queryable_axons_mask
+            filtered_uids = [uid for uid, queryable in zip(uids, queryable_axons_mask) if queryable]
+
+            # Create a list of tuples (UID, Axon) for the filtered UIDs
+            filtered_axons = [(uid, self.metagraph.neurons[uid].axon_info) for uid in filtered_uids]
+
+            return filtered_axons
         except Exception as e:
             print(f"An error occurred while generating filtered axons list: {e}")
             return []
+
 
     def get_filtered_axons(self):
         """Get the next item from the filtered axons list."""
