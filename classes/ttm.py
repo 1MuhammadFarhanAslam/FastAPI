@@ -41,6 +41,7 @@ class MusicGenerationService(AIModelService):
         self.filtered_axon = []
         self.combinations = []
         self.duration = 755  #755 tokens = 15 seconds music
+        self.lock = asyncio.Lock()
         
         ###################################### DIRECTORY STRUCTURE ###########################################
         self.ttm_source_dir = os.path.join(audio_subnet_path, "ttm_source")
@@ -124,18 +125,18 @@ class MusicGenerationService(AIModelService):
                 bt.logging.error(f'The length of current Prompt is greater than 256. Skipping current prompt.')
                 g_prompt = random.choice(g_prompts)
             if step % 40 == 0:
-                filtered_axons = self.get_filtered_axons_from_combinations()
-                bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for Text-To-Music ---------------------------------")
-                bt.logging.info(f"______________TTM-Prompt______________: {g_prompt}")
-                responses = self.query_network(filtered_axons,g_prompt)
-                self.process_responses(filtered_axons,responses, g_prompt)
+                async with self.lock:
+                    filtered_axons = self.get_filtered_axons_from_combinations()
+                    bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for Text-To-Music ---------------------------------")
+                    bt.logging.info(f"______________TTM-Prompt______________: {g_prompt}")
+                    responses = self.query_network(filtered_axons,g_prompt)
+                    self.process_responses(filtered_axons,responses, g_prompt)
 
-                if self.last_reset_weights_block + 1800 < self.current_block:
-                    bt.logging.info(f"Clearing weights for validators and nodes without IPs")
-                    self.last_reset_weights_block = self.current_block        
-                    # set all nodes without ips set to 0
-                    self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
-
+                    if self.last_reset_weights_block + 1800 < self.current_block:
+                        bt.logging.info(f"Clearing weights for validators and nodes without IPs")
+                        self.last_reset_weights_block = self.current_block        
+                        # set all nodes without ips set to 0
+                        self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
     def query_network(self,filtered_axons, prompt):
         # Network querying logic
         
