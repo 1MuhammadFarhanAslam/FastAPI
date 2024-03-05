@@ -268,17 +268,22 @@ async def modify_user_roles(
 ):
     try:
         if not username:
+            bt.logging.error("Username is required.")
             raise HTTPException(status_code=400, detail="Username is required.")
 
         # Fetch the user details
         user = db.query(User).filter(User.username == username).first()
+        bt.logging.info(f"User '{username}' found.")
 
         if user is None:
+            bt.logging.error(f"User '{username}' not found.")
             raise HTTPException(status_code=404, detail=f"User '{username}' not found.")
 
         # Validate the role syntax before proceeding
         role_details = get_role_details(new_role)
+
         if role_details is None:
+            bt.logging.error(f"Invalid role syntax: {new_role}")
             raise HTTPException(status_code=400, detail=f"Invalid role syntax: {new_role}")
 
         # Assign the modified role to the user with the specified subscription duration
@@ -286,11 +291,14 @@ async def modify_user_roles(
 
         # Fetch the updated user details after role modification
         updated_user = db.query(User).filter(User.username == username).first()
+        bt.logging.info(f"Role for user '{username}' modified successfully")
 
         if updated_user is None:
+            bt.logging.error(f"Error retrieving updated user details.")
             raise HTTPException(status_code=500, detail="Error retrieving updated user details.")
 
-        return {"message": f"Role for user '{username}' modified successfully","user_info": '{user}', "user_roles": '{user.roles}'}
+        bt.logging.info(f"Role for user '{username}' modified successfully")
+        return {"message": f"Role for user '{username}' modified successfully", "user_info": updated_user}
 
     except HTTPException as e:
         print(f"Error during role modification: {e}")
