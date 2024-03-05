@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException, Form
 from ..user_database import get_user, verify_user_credentials, update_user_password
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Annotated
 import numpy as np
 import logging
 from fastapi import Depends, UploadFile, File
