@@ -166,8 +166,11 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             # Process the response
             audio_data = ttm_api.process_response(axon, response, request.prompt)
 
-            file_extension = os.path.splitext(audio_data)[1].lower()
-            bt.logging.info(f"audio_file_path: {audio_data}")
+            try:
+                file_extension = os.path.splitext(audio_data)[1].lower()
+                bt.logging.info(f"audio_file_path: {audio_data}")
+            except:
+                raise HTTPException(status_code=500, detail=f"Error processing audio file path or server unaviable for uid: {uid}")
             # Process each audio file path as needed
 
             if file_extension not in ['.wav', '.mp3']:
