@@ -221,22 +221,29 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
 
             # audio_data = None  # Define audio_data outside try-except scope
 
-            try:
-                audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
-                bt.logging.info(f"audio_file_path: {audio_data}")
-            except Exception as e:
-                logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
-            file_extension = os.path.splitext(audio_data)[1].lower()
-            
-            # Process each audio file path as needed
-            if file_extension not in ['.wav', '.mp3']:
-                raise HTTPException(status_code=500, detail="Unsupported audio format.")
+        try:
+            audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
+            bt.logging.info(f"audio_file_path: {audio_data}")
+        except Exception as e:
+            logging.error(f"Error generating voice clone: {e}")
+            raise HTTPException(status_code=500, detail="Error generating voice clone")
 
-            # Set the appropriate content type based on the file extension
-            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+        # Ensure that audio_data is defined even if an exception occurred
+        if not audio_data:
+            raise HTTPException(status_code=500, detail="Voice clone audio data not generated")
 
-            # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+        file_extension = os.path.splitext(audio_data)[1].lower()
+
+        # Process each audio file path as needed
+        if file_extension not in ['.wav', '.mp3']:
+            raise HTTPException(status_code=500, detail="Unsupported audio format.")
+
+        # Set the appropriate content type based on the file extension
+        content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+
+        # Return the audio file
+        return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+
 
             
         else:
