@@ -295,12 +295,12 @@ async def modify_user_roles(
             "message": f"Role for user '{username}' modified successfully",
             "user_info": {
                 "username": updated_user.username,
-                "roles": [{
+                "roles": {
                     "role_name": new_role,
                     "tts_enabled": role_details["tts_enabled"],
                     "ttm_enabled": role_details["ttm_enabled"],
                     "vc_enabled": role_details["vc_enabled"]
-                }]
+                }
             }
         }
 
