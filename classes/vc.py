@@ -163,12 +163,12 @@ class VoiceCloningService(AIModelService):
                 else:
                     sampling_rate = 24000
                 if input_file:
-                    cloned_file_path = os.path.join('/tmp', 'API_cloned_'+ axon.hotkey[:] +'_.wav' )
+                    cloned_file_path = os.path.join('/tmp', 'API_cloned_'+ axon.hotkey[:] +'.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
                     bt.logging.info(f"The cloned file for API have been saved successfully: {cloned_file_path}")
                 else:
-                    cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:] +'_.wav' )
+                    cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:] +'.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(self.audio_file_path, cloned_file_path, prompt)
                     bt.logging.info(f"The cloned file have been saved successfully: {cloned_file_path}")
