@@ -132,6 +132,7 @@ class MusicGenerationService(AIModelService):
 
 
     def process_response(self, axon, response, prompt):
+        music_file = None
         try:
             music_output = response.music_output
             if response is not None and isinstance(response, lib.protocol.MusicGeneration) and response.music_output is not None and response.dendrite.status_code == 200:
