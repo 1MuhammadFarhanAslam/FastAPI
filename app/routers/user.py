@@ -104,7 +104,6 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
 
-
             # Check if there are axons available
             if not filtered_axons:
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech.")
@@ -151,7 +150,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.ttm_enabled == 1:
             print("Congratulations! You have access to Text-to-Music (TTM) service.")
-            
+
             # Get filtered axons
             filtered_axons = ttm_api.get_filtered_axons()
 
