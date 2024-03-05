@@ -290,19 +290,7 @@ async def modify_user_roles(
         if updated_user is None:
             raise HTTPException(status_code=500, detail="Error retrieving updated user details.")
 
-                # Return the response with the message and user information
-        return {
-            "message": f"Role for user '{username}' modified successfully",
-            "user_info": {
-                "username": updated_user.username,
-                "roles": {
-                    "role_name": new_role,
-                    "tts_enabled": role_details["tts_enabled"],
-                    "ttm_enabled": role_details["ttm_enabled"],
-                    "vc_enabled": role_details["vc_enabled"]
-                }
-            }
-        }
+        return {"message": f"Role for user '{username}' modified successfully", "user_info": updated_user.dict()}
 
     except HTTPException as e:
         print(f"Error during role modification: {e}")
