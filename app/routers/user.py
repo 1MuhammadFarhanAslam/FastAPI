@@ -1,6 +1,7 @@
 # user.py
+import torchaudio
 from fastapi import APIRouter, Depends, HTTPException, Form
-from ..user_database import get_user, verify_user_credentials, update_user_password
+from ..user_database import get_user, verify_user_credentials, update_user_password, get_database
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 import numpy as np
@@ -22,13 +23,12 @@ from fastapi.responses import FileResponse, HTMLResponse
 from mimetypes import guess_type
 from os.path import exists
 import os
-import torchaudio
 from typing import Annotated
 import json
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 import random
-from .user import get_user
+from sqlalchemy.orm import Session
 
 
 
@@ -43,13 +43,15 @@ vc_api = VC_API()
 class TTSMrequest(BaseModel):
     prompt: str 
 
+db: Session = Depends(get_database)  # Dependency to provide the session
+
 @router.post("/change_password", response_model=dict)
 async def change_user_password(
     username: str = Form(...),
     current_password: str = Form(...),
     new_password: str = Form(..., min_length=8, max_length=16, regex="^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?/~\\-=|\\\\]+$"),
     confirm_new_password: str = Form(...),
-    current_active_user: User = Depends(get_current_active_user)
+    current_active_user: User = Depends(get_current_active_user),
 ):
     try:
         # Validate that all required fields are provided
@@ -58,13 +60,13 @@ async def change_user_password(
             raise HTTPException(status_code=400, detail="All fields are required.")
 
         # Check if the username exists
-        user = get_user(username, db=db)
+        user = get_user(username, db)
         if not user:
             bt.logging.error("User not found.")
             raise HTTPException(status_code=404, detail="User not found")
 
         # Verify the user's current password
-        if not verify_user_credentials(username, current_password):
+        if not verify_user_credentials(username, current_password, db):
             bt.logging.error("Invalid credentials.")
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
@@ -84,7 +86,7 @@ async def change_user_password(
             raise HTTPException(status_code=400, detail="New password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         # Update the user's password
-        updated_user = update_user_password(username, new_password)
+        updated_user = update_user_password(username, new_password, db)
         if not updated_user:
             bt.logging.error("Failed to update password.")
             raise HTTPException(status_code=500, detail="Failed to update password.")
