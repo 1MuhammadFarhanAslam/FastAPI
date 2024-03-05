@@ -163,12 +163,12 @@ class VoiceCloningService(AIModelService):
                 else:
                     sampling_rate = 24000
                 if input_file:
-                    cloned_file_path = os.path.join('/tmp', 'API_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    cloned_file_path = os.path.join('/tmp', 'API_cloned_'+ axon.hotkey[:] +'_.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
                     bt.logging.info(f"The cloned file for API have been saved successfully: {cloned_file_path}")
                 else:
-                    cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:6] +'_.wav' )
+                    cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:] +'_.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(self.audio_file_path, cloned_file_path, prompt)
                     bt.logging.info(f"The cloned file have been saved successfully: {cloned_file_path}")
@@ -177,7 +177,9 @@ class VoiceCloningService(AIModelService):
                     self.update_score(axon, score, service="Voice Cloning", ax=axon)
                 except Exception as e:
                     bt.logging.error(f"Error updating the score in vc.py: {e}")
+            bt.logging.info(f"The cloned file have been saved successfully: {cloned_file_path}")
             return cloned_file_path
+            
         except Exception as e:
             pass
             # bt.logging.info(f"Error processing speech output : {e}")

@@ -196,6 +196,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
 async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
+    prompt = json.loads(prompt)
     
     if user.roles:
         role = user.roles[0]
