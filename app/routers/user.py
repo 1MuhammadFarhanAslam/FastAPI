@@ -197,6 +197,14 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
     print("User details:", user_dict)
     prompt = json.loads(prompt)
     
+    # Validate prompt
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
+
+    # Validate audio file
+    if not audio_file:
+        raise HTTPException(status_code=400, detail="Audio file is required.")
+
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
@@ -250,4 +258,5 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
     else:
         print("You do not have any roles assigned.")
         raise HTTPException(status_code=403, detail="User does not have any roles assigned")
+
 
