@@ -104,7 +104,7 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
             
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
-            bt.logging.info(f"Filtered axons: {filtered_axons}")
+
 
             # Check if there are axons available
             if not filtered_axons:
@@ -154,7 +154,6 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             print("Congratulations! You have access to Text-to-Music (TTM) service.")
             # Get filtered axons
             filtered_axons = ttm_api.get_filtered_axons()
-            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
@@ -205,7 +204,6 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             print("Congratulations! You have access to Voice Clone (VC) service.")
             # Get filtered axons
             filtered_axons = vc_api.get_filtered_axons()
-            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
