@@ -159,6 +159,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
 
             # Check if there are axons available
             if not filtered_axons:
+                bt.logging.error(f"No axons available for Text-to-Music.")
                 raise HTTPException(status_code=404, detail="No axons available for Text-to-Music.")
 
             # Choose a TTM axon randomly
@@ -173,10 +174,12 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
                 file_extension = os.path.splitext(audio_data)[1].lower()
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except:
+                bt.logging.error(f"Error processing audio file path or server unaviable for uid: {uid}")
                 raise HTTPException(status_code=404, detail=f"Error processing audio file path or server unaviable for uid: {uid}")
             # Process each audio file path as needed
 
             if file_extension not in ['.wav', '.mp3']:
+                bt.logging.error(f"Unsupported audio format for uid: {uid}")
                 raise HTTPException(status_code=405, detail="Unsupported audio format.")
 
             # Set the appropriate content type based on the file extension
