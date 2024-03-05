@@ -28,6 +28,7 @@ import json
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 import random
+from .user import get_user
 
 
 
@@ -57,7 +58,7 @@ async def change_user_password(
             raise HTTPException(status_code=400, detail="All fields are required.")
 
         # Check if the username exists
-        user = get_user(username)
+        user = get_user(username, db=db)
         if not user:
             bt.logging.error("User not found.")
             raise HTTPException(status_code=404, detail="User not found")
