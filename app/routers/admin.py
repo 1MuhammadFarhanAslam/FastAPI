@@ -49,7 +49,7 @@ async def create_admin_account(
 
         # Additional validation: Check if the password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", enter_password):
-            raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
+            raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         print(f"Creating admin with username: {username}")
         # Hash the password
@@ -240,7 +240,7 @@ async def create_user_account(
 
         # Additional validation: Check if the password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", set_password):
-            raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
+            raise HTTPException(status_code=401, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         # Create the user and get user info
         user_info = create_user(username=username, password=set_password, role_assign=selected_role,
