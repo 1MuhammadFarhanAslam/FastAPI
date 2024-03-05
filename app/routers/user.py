@@ -223,7 +223,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...
 
             try:
                 audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
-                bt.logging.info(f"audio_file_path: {len(audio_data)}")
+                bt.logging.info(f"audio_file_path: {audio_data}")
             except Exception as e:
                 logging.error(f"Error generating voice clone: {e}")
                 raise HTTPException(status_code=500, detail="Error generating voice clone")
