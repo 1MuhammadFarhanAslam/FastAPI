@@ -232,13 +232,16 @@ async def create_user_account(
 ):
     try:
         if not username or not set_password:
+            bt.logging.error("Both username and password are required.")
             raise HTTPException(status_code=400, detail="Both username and password are required.")
 
         if subscription_duration_in_days <= 0:
+            bt.logging.error("Subscription duration must be greater than 0.")
             raise HTTPException(status_code=400, detail="Subscription duration must be greater than 0.")
 
         # Additional validation: Check if the password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", set_password):
+            bt.logging.error("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
             raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         # Create the user and get user info
@@ -248,6 +251,7 @@ async def create_user_account(
         if user_info is None:
             raise HTTPException(status_code=400, detail="Username already exists. Please choose a different username.")
 
+        bt.logging.info(f"User created successfully: {user_info}")
         return {"message": "User created successfully", "user_info": user_info}
 
     except HTTPException as e:
