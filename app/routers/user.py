@@ -212,7 +212,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...
             # Read the audio file and return its content
             temp_file_path = f"temp_audio_file{audio_file.filename}"  # Generate a temporary file name
             with open(temp_file_path, 'wb+') as f:
-                f.write(audio_file.read())  # Write the contents to a temporary file
+                f.write(await audio_file.read())  # Write the contents to a temporary file
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
             # Choose a VC axon randomly
@@ -223,7 +223,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...
 
             try:
                 audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
-                bt.logging.info(f"audio_file_path: {audio_data}")
+                bt.logging.info(f"audio_file_path: {len(audio_data)}")
             except Exception as e:
                 logging.error(f"Error generating voice clone: {e}")
                 raise HTTPException(status_code=500, detail="Error generating voice clone")
