@@ -150,7 +150,7 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
             # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data), headers={"TTM-Axon-UID": str(uid)})
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
