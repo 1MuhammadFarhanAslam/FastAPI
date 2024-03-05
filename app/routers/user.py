@@ -158,7 +158,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             if not filtered_axons:
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
-            # Choose a TTS axon randomly
+            # Choose a TTM axon randomly
             axon = np.random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}")
 
