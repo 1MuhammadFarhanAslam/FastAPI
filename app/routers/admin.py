@@ -242,7 +242,7 @@ async def create_user_account(
         # Additional validation: Check if the password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", set_password):
             bt.logging.error("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
-            raise HTTPException(status_code=403, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
+            raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         # Create the user and get user info
         user_info = create_user(username=username, password=set_password, role_assign=selected_role,
