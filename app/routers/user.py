@@ -115,7 +115,7 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
-            print('Congratulations! You have access to Text-to-Speech (TTS) service. Enjoy your experience.')
+            print(f'{user.username}, Congratulations! You have access to Text-to-Speech (TTS) service. Enjoy your experience.')
             
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
@@ -158,10 +158,12 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
-            raise HTTPException(status_code=401, detail="Your subscription has expired or you do not have access to the Text-to-Speech service.")
+            bt.logging.error(f"{user.username}! Your subscription has expired or you do not have access to the Text-to-Speech service.")
+            raise HTTPException(status_code=401, detail= f"{user.username}! Your subscription has expired or you do not have access to the Text-to-Speech service.")
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
-        raise HTTPException(status_code=401, detail="You do not have any roles assigned")
+        bt.logging.error(f"{user.username}! You do not have any roles assigned")
+        raise HTTPException(status_code=401, detail=f"{user.username}! You do not have any roles assigned")
 
 
 
@@ -198,7 +200,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except:
                 bt.logging.error(f"Error processing audio file path or server unaviable for uid: {uid}")
-                raise HTTPException(status_code=404, detail=f"Error processing audio file path or server unavailable for uid: {uid}")
+                raise HTTPException(status_code=404, detail= f"Error processing audio file path or server unavailable for uid: {uid}")
             # Process each audio file path as needed
 
             if file_extension not in ['.wav', '.mp3']:
@@ -212,11 +214,11 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data), headers={"TTM-Axon-UID": str(uid)})
 
         else:
-            print("You do not have access to Text-to-Music service or subscription is expired.")
-            raise HTTPException(status_code=401, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
+            print(f"{user.username}! You do not have any access to Text-to-Music (TTM) service or subscription is expired.")
+            raise HTTPException(status_code=401, detail=f"{user.username}! Your subscription have been expired or you does not have any access to Text-to-Music (TTM) service")
     else:
-        print("You do not have any roles assigned.")
-        raise HTTPException(status_code=401, detail="Your does not have any roles assigned")
+        print(f"{user.username}! You do not have any roles assigned.")
+        raise HTTPException(status_code=401, detail=f"{user.username}! Your does not have any roles assigned")
 
 
 @router.post("/vc_service")
@@ -284,8 +286,8 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
             return FileResponse(path=audio_data, media_type="audio/wav", filename=os.path.basename(audio_data), headers={"VC-Axon-UID": str(uid)})
 
         else:
-            print("You do not have access to Voice Clone service or subscription is expired.")
-            raise HTTPException(status_code=401, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
+            print(f"{user.username}! You do not have access to Voice Clone service or subscription is expired.")
+            raise HTTPException(status_code=401, detail=f"{user.username}! Your subscription has expired or you do not have access to the Voice Clone service.")
     else:
-        print("You do not have any roles assigned.")
-        raise HTTPException(status_code=401, detail="User does not have any roles assigned")
+        print(f"{user.username}! You do not have any roles assigned.")
+        raise HTTPException(status_code=401, detail=F"{user.username}! User does not have any roles assigned")
