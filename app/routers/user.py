@@ -139,7 +139,7 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
                 file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except:
-                bt.logging.error(f"Error processing audio file path or server unaviable for uid: {uid}")
+                bt.logging.error(f"Error processing audio file path or server unavailable for uid: {uid}")
                 raise HTTPException(status_code=404, detail=f"Error processing audio file path or server unavailable for uid: {uid}")
             
             if file_extension not in ['.wav', '.mp3']:

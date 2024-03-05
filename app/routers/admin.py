@@ -139,7 +139,7 @@ async def read_admin_info(
 
 
 @router.put("/{username}", response_model=dict)
-async def update_admin(
+async def change_admin_password(
     username: str,
     current_password: str = Form(...),
     new_password: str = Form(...),
