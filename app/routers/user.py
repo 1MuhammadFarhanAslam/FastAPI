@@ -51,7 +51,7 @@ async def change_user_password(
     current_password: str = Form(...),
     new_password: str = Form(..., min_length=8, max_length=16, regex="^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?/~\\-=|\\\\]+$"),
     confirm_new_password: str = Form(...),
-    current_active_user: User = Depends(get_current_active_user),
+    current_active_user: User = Depends(get_current_active_user)
 ):
     try:
         # Validate that all required fields are provided
