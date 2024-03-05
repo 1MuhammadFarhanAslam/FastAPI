@@ -261,7 +261,7 @@ async def create_user_account(
 @router.post("/modify_user_roles", tags=["Admin"])
 async def modify_user_roles(
     username: str = Form(...),
-    selected_role: str = Form(...),  # Admin-selected role for the user
+    new_role: str = Form(...),  # Admin-selected role for the user
     subscription_duration: int = Form(...),  # Subscription duration in days or minutes
     current_active_admin: Admin = Depends(get_current_active_admin),
     db: Session = Depends(get_database)
@@ -277,12 +277,12 @@ async def modify_user_roles(
             raise HTTPException(status_code=404, detail=f"User '{username}' not found.")
 
         # Validate the role syntax before proceeding
-        role_details = get_role_details(selected_role)
+        role_details = get_role_details(new_role)
         if role_details is None:
-            raise HTTPException(status_code=400, detail=f"Invalid role syntax: {selected_role}")
+            raise HTTPException(status_code=400, detail=f"Invalid role syntax: {new_role}")
 
         # Assign the modified role to the user with the specified subscription duration
-        assign_user_roles(username, selected_role, subscription_duration)
+        assign_user_roles(username, new_role, subscription_duration)
 
         # Fetch the updated user details after role modification
         updated_user = db.query(User).filter(User.username == username).first()
@@ -290,7 +290,19 @@ async def modify_user_roles(
         if updated_user is None:
             raise HTTPException(status_code=500, detail="Error retrieving updated user details.")
 
-        return {"message": f"Role for user '{username}' modified successfully", "user_info": updated_user}
+                # Return the response with the message and user information
+        return {
+            "message": f"Role for user '{username}' modified successfully",
+            "user_info": {
+                "username": updated_user.username,
+                "roles": [{
+                    "role_name": new_role,
+                    "tts_enabled": role_details["tts_enabled"],
+                    "ttm_enabled": role_details["ttm_enabled"],
+                    "vc_enabled": role_details["vc_enabled"]
+                }]
+            }
+        }
 
     except HTTPException as e:
         print(f"Error during role modification: {e}")
