@@ -149,19 +149,15 @@ class VoiceCloningService(AIModelService):
         try:
             if response is not None and response.clone_output is not None:
                 output = response.clone_output
-                bt.logging.info(f"the output of the cloned voice issssssssssssssssssssssssssssssssssssssss: {len(output)}")
                 # Convert the list to a tensor
                 clone_tensor = torch.Tensor(output)
 
                 # Normalize the speech data
                 audio_data = clone_tensor / torch.max(torch.abs(clone_tensor))
-                bt.logging.info(f"after going through the normalization process: {len(audio_data)}")
                 # Convert to 32-bit PCM
                 audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
-                bt.logging.info(f"after converting to 32-bit PCM: {audio_data_int}")
                 # Add an extra dimension to make it a 2D tensor
                 audio_data_int = audio_data_int.unsqueeze(0)
-                bt.logging.info(f"after adding an extra dimension in audio_data_int: ")
                 if response.model_name == "elevenlabs/eleven":
                     sampling_rate = 44000
                 else:
@@ -170,13 +166,13 @@ class VoiceCloningService(AIModelService):
                     cloned_file_path = os.path.join('/tmp', 'API_cloned_'+ axon.hotkey[:6] +'_.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(input_file, cloned_file_path, prompt) # self.audio_file_path
-                    bt.logging.info(f"the cloned file for API have been saved successfully: {cloned_file_path}")
+                    bt.logging.info(f"The cloned file for API have been saved successfully: {cloned_file_path}")
                 else:
                     cloned_file_path = os.path.join('/tmp', '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(self.audio_file_path, cloned_file_path, prompt)
-                    bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
-                bt.logging.info(f"the score of the cloned file : {score}")
+                    bt.logging.info(f"The cloned file have been saved successfully: {cloned_file_path}")
+                bt.logging.info(f"The score of the cloned file : {score}")
                 try:
                     self.update_score(axon, score, service="Voice Cloning", ax=axon)
                 except Exception as e:

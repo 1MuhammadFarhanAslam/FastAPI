@@ -36,7 +36,6 @@ class TextToSpeechService(AIModelService):
         self.filtered_axon = []
         self.last_updated_block = self.current_block - (self.current_block % 100)
         self.last_reset_weights_block = self.current_block
-        self.islocaltts = False
         self.p_index = 0
         self.last_run_start_time = dt.datetime.now()
         self.tao = self.metagraph.neurons[self.uid].stake.tao
@@ -135,50 +134,24 @@ class TextToSpeechService(AIModelService):
             new_scores = torch.zeros(size_difference, dtype=torch.float32)
             self.scores = torch.cat((self.scores, new_scores))
             del new_scores
-
-        # check if there is a file in the tts_source directory with the name tts_prompts.csv
-        if os.path.exists(os.path.join(self.tts_source_dir, 'tts_prompts.csv')) and not self.islocaltts:
-            self.islocaltts = True
-
-            self.load_local_prompts()
-            l_prompts = self.local_prompts
-            for p_index, lprompt in enumerate(l_prompts):                
-                # if step % 2 == 0:
-                if len(lprompt) > 256:
-                    bt.logging.error(f'The length of current Prompt is greater than 256. Skipping current prompt.')
-                    continue
-                self.p_index = p_index
+        g_prompts = self.load_prompts()
+        g_prompt = random.choice(g_prompts)
+        while len(g_prompt) > 256:
+            bt.logging.error(f'The length of current Prompt is greater than 256. Skipping current prompt.')
+            g_prompt = random.choice(g_prompts)
+        if step % 4 == 0:
+            async with self.lock:
                 filtered_axons = self.get_filtered_axons_from_combinations()
-                bt.logging.info(f"--------------------------------- Prompt are being used locally for TTS at Step: {step} ---------------------------------")
-                responses = self.query_network(filtered_axons, lprompt)
-                self.process_responses(filtered_axons, responses, lprompt)
+                bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for TTS at Step: {step} ---------------------------------")
+                bt.logging.info(f"______________Prompt______________: {g_prompt}")
+                responses = self.query_network(filtered_axons, g_prompt)
+                self.process_responses(filtered_axons, responses, g_prompt)
 
                 if self.last_reset_weights_block + 1800 < self.current_block:
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
                     self.last_reset_weights_block = self.current_block        
                     # set all nodes without ips set to 0
                     self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
-            self.islocaltts = False
-        else:
-            bt.logging.trace("No prompts found or wrong file name was given. Using Huggingface Dataset for prompts.")
-            g_prompts = self.load_prompts()
-            g_prompt = random.choice(g_prompts)
-            while len(g_prompt) > 256:
-                bt.logging.error(f'The length of current Prompt is greater than 256. Skipping current prompt.')
-                g_prompt = random.choice(g_prompts)
-            if step % 4 == 0:
-                async with self.lock:
-                    filtered_axons = self.get_filtered_axons_from_combinations()
-                    bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for TTS at Step: {step} ---------------------------------")
-                    bt.logging.info(f"______________Prompt______________: {g_prompt}")
-                    responses = self.query_network(filtered_axons, g_prompt)
-                    self.process_responses(filtered_axons, responses, g_prompt)
-
-                    if self.last_reset_weights_block + 1800 < self.current_block:
-                        bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
-                        self.last_reset_weights_block = self.current_block        
-                        # set all nodes without ips set to 0
-                        self.scores = self.scores * torch.Tensor([self.metagraph.neurons[uid].axon_info.ip != '0.0.0.0' for uid in self.metagraph.uids])
     def query_network(self, axon, prompt):
         responses = self.dendrite.query(
             axon,
@@ -247,12 +220,8 @@ class TextToSpeechService(AIModelService):
             bt.logging.info(f"Audio data length after adding dimension: {len(audio_data_int)}")
 
             # Save the audio data as a .wav file
-            if self.islocaltts:
-                output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
-                bt.logging.info(f"Saving audio data to {output_path}")
-            else:
-                output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
-                bt.logging.info(f"Saving audio data to 2nd {output_path}")
+            output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
+            bt.logging.info(f"Saving audio data to 2nd {output_path}")
             
             # # Check if any WAV file with .wav extension exists and delete it
             # existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
