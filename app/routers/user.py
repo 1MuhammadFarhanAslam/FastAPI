@@ -142,55 +142,57 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
 
 
 
-# # Endpoint for ttm_service
-# @router.post("/ttm_service")
-# async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_active_user)):
-#     user_dict = jsonable_encoder(user)
-#     print("User details:", user_dict)
-#     if user.roles:
-#         role = user.roles[0]
-#         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.ttm_enabled == 1:
-#             print("Congratulations! You have access to Text-to-Music (TTM) service.")
-#             # Get filtered axons
-#             filtered_axons = ttm_api.get_filtered_axons()
+# Endpoint for ttm_service
+@router.post("/ttm_service")
+async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_active_user)):
+    user_dict = jsonable_encoder(user)
+    print("User details:", user_dict)
+    if user.roles:
+        role = user.roles[0]
+        if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.ttm_enabled == 1:
+            print("Congratulations! You have access to Text-to-Music (TTM) service.")
+            # Get filtered axons
+            filtered_axons = ttm_api.get_filtered_axons()
 
-#             # Check if there are axons available
-#             if not filtered_axons:
-#                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
+            # Check if there are axons available
+            if not filtered_axons:
+                raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
-#             # Choose a TTS axon randomly
-#             axon = np.random.choice(filtered_axons)
-#             bt.logging.info(f"Chosen axon: {axon}")
+            # Choose a TTS axon randomly
+            axon = np.random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}")
 
-#             # Use the prompt from the request in the query_network function
-#             bt.logging.info(f"request prompt: {request.prompt}")
-#             bt.logging.info(f"request axon here: {axon}")
-#             response = ttm_api.query_network(axon, request.prompt)
+            # Use the prompt from the request in the query_network function
+            bt.logging.info(f"request prompt: {request.prompt}")
+            bt.logging.info(f"request axon here: {axon}")
+            response = ttm_api.query_network(axon, request.prompt)
 
-#             # Process the response
-#             audio_data = ttm_api.process_response(axon, response, request.prompt)
+            # Process the response
+            audio_data = ttm_api.process_response(axon, response, request.prompt)
 
-#             file_extension = os.path.splitext(audio_data)[1].lower()
-#             bt.logging.info(f"audio_file_path: {audio_data}")
-#             # Process each audio file path as needed
+            file_extension = os.path.splitext(audio_data)[1].lower()
+            bt.logging.info(f"audio_file_path: {audio_data}")
+            # Process each audio file path as needed
 
-#             if file_extension not in ['.wav', '.mp3']:
-#                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
-#             # Set the appropriate content type based on the file extension
-#             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
+            # Set the appropriate content type based on the file extension
+            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
-#             # Return the audio file
-#             return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+            # Return the audio file
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
 
-#         else:
-#             print("You do not have access to Text-to-Music service or subscription is expired.")
-#             raise HTTPException(status_code=403, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
-#     else:
-#         print("You do not have any roles assigned.")
-#         raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
+        else:
+            print("You do not have access to Text-to-Music service or subscription is expired.")
+            raise HTTPException(status_code=403, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
+    else:
+        print("You do not have any roles assigned.")
+        raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
      
 
+# Endpoint for vc_service
+    
 # @router.post("/vc_service")
 # async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Form(...), user: User = Depends(get_current_active_user)):
 #     user_dict = jsonable_encoder(user)
@@ -267,9 +269,6 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
 #         raise HTTPException(status_code=403, detail="User does not have any roles assigned")
 
 
-from fastapi.responses import HTMLResponse, StreamingResponse
-from io import BytesIO
-
 @router.post("/vc_service")
 async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Form(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
@@ -324,21 +323,8 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
             if file_extension not in ['.wav', '.mp3']:
                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
-            # Set the appropriate content type based on the file extension
-            content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
-
-            # Return both HTML response with message and download link and the audio file in a single response
-            response_body = f'The audio is generated by VC axon: {uid}'
-            html_response = HTMLResponse(content=response_body, status_code=200)
-            audio_file_response = FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
-            
-            # Create a Multipart Response containing both responses
-            multipart_response = BytesIO()
-            multipart_response.write(html_response.body.encode())
-            multipart_response.write(audio_file_response.body)
-            multipart_response.seek(0)
-            
-            return StreamingResponse(multipart_response, media_type="multipart/mixed")
+            # Return the audio file along with the UID in the response body
+            return FileResponse(path=audio_data, media_type="audio/wav", filename=os.path.basename(audio_data), headers={"UID": str(uid)})
 
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
