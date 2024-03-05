@@ -52,9 +52,9 @@ async def run_fastapi_with_ngrok(app):
 
 async def main():
     services = [
-        MusicGenerationService(),
-        TextToSpeechService(),
-        VoiceCloningService(),
+        # MusicGenerationService(),
+        # TextToSpeechService(),
+        # VoiceCloningService(),
     ]
 
     # Initialize an empty list to hold our tasks
