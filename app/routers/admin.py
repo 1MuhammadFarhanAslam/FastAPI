@@ -16,6 +16,7 @@ from ..admin_auth import get_current_active_admin
 import re
 from sqlalchemy.orm import Session
 from ..admin_database import get_secret_key, get_database
+import bittensor as bt
 
 
 router = APIRouter()
@@ -48,6 +49,7 @@ async def create_admin_account(
 
         # Additional validation: Check if the password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", enter_password):
+            bt.logging.error("Password does not meet the specified conditions.")
             raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         print(f"Creating admin with username: {username}")
