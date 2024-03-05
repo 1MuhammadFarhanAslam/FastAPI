@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form
 from ..user_database import get_user, verify_user_credentials, update_user_password
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Annotated
 import numpy as np
 import logging
 from fastapi import Depends, UploadFile, File
@@ -193,7 +193,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
      
 
 @router.post("/vc_service")
-async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...), user: User = Depends(get_current_active_user)):
+async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Form(...), user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
     print("User details:", user_dict)
     prompt = json.loads(prompt)
