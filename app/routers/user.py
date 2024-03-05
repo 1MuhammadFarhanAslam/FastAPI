@@ -240,9 +240,8 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
             # Set the appropriate content type based on the file extension
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
-            # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
-
+            # Return the audio file along with the UID in the response body
+            return {"uid": uid, "audio_file": FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data), headers={"Content-Disposition": "attachment; filename=voice_clone.wav"})}
 
             
         else:
