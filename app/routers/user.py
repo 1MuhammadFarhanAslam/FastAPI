@@ -100,10 +100,6 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.tts_enabled == 1:
             print('Congratulations! You have access to Text-to-Speech (TTS) service. Enjoy your experience.')
-
-            # Validate prompt
-            if not request.prompt:
-                raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
             
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
@@ -155,10 +151,6 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.ttm_enabled == 1:
             print("Congratulations! You have access to Text-to-Music (TTM) service.")
-
-            # Validate prompt
-            if not request.prompt:
-                raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
             
             # Get filtered axons
             filtered_axons = ttm_api.get_filtered_axons()
@@ -208,7 +200,7 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
     
     # Validate prompt
     if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
+        raise HTTPException(status_code=400, detail="Prompt section cannot be empty.")
 
     # Validate audio file
     if not audio_file:
