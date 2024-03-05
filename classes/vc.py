@@ -182,7 +182,7 @@ class VoiceCloningService(AIModelService):
             
         except Exception as e:
             pass
-            # bt.logging.info(f"Error processing speech output : {e}")
+            bt.logging.info(f"Error processing speech output : {e}")
 
 
     def score_output(self, input_path, output_path, text_input):
