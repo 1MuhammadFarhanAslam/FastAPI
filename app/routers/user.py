@@ -219,7 +219,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             uid, axon = random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
 
-            audio_data = None  # Define audio_data outside try-except scope
+            # audio_data = None  # Define audio_data outside try-except scope
 
             try:
                 audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
