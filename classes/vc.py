@@ -62,7 +62,6 @@ class VoiceCloningService(AIModelService):
             try:
                 new_tasks = await self.main_loop_logic(step)
                 running_tasks.extend(new_tasks)
-                bt.logging.error(f"The Current step for vc is ------------------------- : {step}")
                 # Periodically check and clean up completed tasks
                 running_tasks = [task for task in running_tasks if not task.done()]
                 step += 1
@@ -177,7 +176,7 @@ class VoiceCloningService(AIModelService):
                     torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                     score = self.score_output(self.audio_file_path, cloned_file_path, prompt)
                     bt.logging.info(f"the cloned file have been saved successfully: {cloned_file_path}")
-                bt.logging.info(f"the score of the cloned file issssssssssssssssssss: {score}")
+                bt.logging.info(f"the score of the cloned file : {score}")
                 try:
                     self.update_score(axon, score, service="Voice Cloning", ax=axon)
                 except Exception as e:
