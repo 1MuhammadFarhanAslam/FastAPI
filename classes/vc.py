@@ -114,7 +114,7 @@ class VoiceCloningService(AIModelService):
         except Exception as e:
             print(f"An error occurred while reading the audio file: {e}")
     
-    def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None, input_file=None):
+    async def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None, input_file=None):
         try:
             filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
             # for ax in self.filtered_axons:

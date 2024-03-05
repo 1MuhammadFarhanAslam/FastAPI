@@ -221,7 +221,7 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
             # audio_data = None  # Define audio_data outside try-except scope
 
             try:
-                audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
+                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except Exception as e:
                 logging.error(f"Error generating voice clone: {e}")
