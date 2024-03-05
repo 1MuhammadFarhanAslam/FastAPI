@@ -159,16 +159,12 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
             # Choose a TTM axon randomly
-            axon = np.random.choice(filtered_axons)
-            bt.logging.info(f"Chosen axon: {axon}")
-
-            # Use the prompt from the request in the query_network function
-            bt.logging.info(f"request prompt: {request.prompt}")
-            bt.logging.info(f"request axon here: {axon}")
-            response = ttm_api.query_network(axon, request.prompt)
+            uid, axon = random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
+            response = ttm_api.query_network([axon], request.prompt)
 
             # Process the response
-            audio_data = ttm_api.process_response(axon, response, request.prompt)
+            audio_data = ttm_api.process_response([axon], response, request.prompt)
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
@@ -181,7 +177,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
             # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data), headers={"TTM-Axon-UID": str(uid)})
 
         else:
             print("You do not have access to Text-to-Music service or subscription is expired.")
