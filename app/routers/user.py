@@ -158,10 +158,10 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
 
         else:
             # If the user doesn't have access to TTM service or subscription is expired, raise 403 Forbidden
-            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Text-to-Speech service.")
+            raise HTTPException(status_code=401, detail="Your subscription has expired or you do not have access to the Text-to-Speech service.")
     else:
         # If the user doesn't have any roles assigned, raise 403 Forbidden
-        raise HTTPException(status_code=403, detail="You do not have any roles assigned")
+        raise HTTPException(status_code=401, detail="You do not have any roles assigned")
 
 
 
@@ -213,10 +213,10 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
 
         else:
             print("You do not have access to Text-to-Music service or subscription is expired.")
-            raise HTTPException(status_code=403, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
+            raise HTTPException(status_code=401, detail="Your subscription have been expired or you does not have any access to Text-to-Music service")
     else:
         print("You do not have any roles assigned.")
-        raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
+        raise HTTPException(status_code=401, detail="Your does not have any roles assigned")
 
 
 @router.post("/vc_service")
@@ -285,7 +285,7 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
 
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
-            raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
+            raise HTTPException(status_code=401, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
     else:
         print("You do not have any roles assigned.")
-        raise HTTPException(status_code=403, detail="User does not have any roles assigned")
+        raise HTTPException(status_code=401, detail="User does not have any roles assigned")
