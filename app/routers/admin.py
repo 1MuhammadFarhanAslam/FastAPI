@@ -288,7 +288,7 @@ async def modify_user_roles(
 
         if role_details is None:
             bt.logging.error(f"Invalid role syntax: {new_role}")
-            raise HTTPException(status_code=400, detail=f"Invalid role syntax: {new_role}")
+            raise HTTPException(status_code=404, detail=f"Invalid role syntax: {new_role}")
 
         # Assign the modified role to the user with the specified subscription duration
         assign_user_roles(username, new_role, subscription_duration)
@@ -299,7 +299,7 @@ async def modify_user_roles(
 
         if updated_user is None:
             bt.logging.error(f"Error retrieving updated user details.")
-            raise HTTPException(status_code=500, detail="Error retrieving updated user details.")
+            raise HTTPException(status_code=404, detail="Error retrieving updated user details.")
 
         bt.logging.info(f"Role for user '{username}' modified successfully")
         return {"message": f"Role for user '{username}' modified successfully", "user_info": updated_user}
@@ -309,7 +309,7 @@ async def modify_user_roles(
         raise e
     except Exception as e:
         print(f"Error during role modification: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=404, detail="Error during role modification")
     
 
 @router.post("/reset_password/{username}", response_model=dict, tags=["Admin"])
