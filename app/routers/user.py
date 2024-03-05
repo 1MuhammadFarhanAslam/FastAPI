@@ -25,6 +25,8 @@ import os
 import torchaudio
 from typing import Annotated
 import json
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 import random
 
 
@@ -92,6 +94,22 @@ async def change_user_password(
 
 ##########################################################################################################################
 
+
+
+@router.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    if exc.status_code == 500:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Error processing audio file path or server unavailable."}
+        )
+    else:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.detail}
+        )
+
+
 @router.post("/tts_service/")
 async def tts_service(request: TTSMrequest, user: User = Depends(get_current_active_user)):
     user_dict = jsonable_encoder(user)
@@ -106,7 +124,7 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
 
             # Check if there are axons available
             if not filtered_axons:
-                raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech.")
+                raise custom_http_exception_handler(status_code=500, detail="No axons available for Text-to-Speech.")
 
             # Choose a TTS axon randomly
             axon = np.random.choice(filtered_axons)
@@ -170,11 +188,11 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
                 file_extension = os.path.splitext(audio_data)[1].lower()
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except:
-                raise HTTPException(status_code=403, detail=f"Error processing audio file path or server unaviable for uid: {uid}")
+                raise HTTPException(status_code=500, detail=f"Error processing audio file path or server unaviable for uid: {uid}")
             # Process each audio file path as needed
 
             if file_extension not in ['.wav', '.mp3']:
-                raise HTTPException(status_code=403, detail="Unsupported audio format.")
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
             # Set the appropriate content type based on the file extension
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
@@ -188,6 +206,19 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
     else:
         print("You do not have any roles assigned.")
         raise HTTPException(status_code=403, detail="Your does not have any roles assigned")
+
+@router.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    if exc.status_code == 500:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Error processing audio file path or server unavailable."}
+        )
+    else:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.detail}
+        )
 
 
 @router.post("/vc_service")
