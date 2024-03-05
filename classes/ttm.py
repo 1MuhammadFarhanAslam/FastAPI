@@ -167,19 +167,15 @@ class MusicGenerationService(AIModelService):
             audio_data_int = audio_data_int.unsqueeze(0)
 
             # Save the audio data as a .wav file
-            if self.islocaltts:
-                output_path = os.path.join(self.ttm_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
-            else:
-                # After saving the audio file
-                output_path = os.path.join('/tmp', f'output_music_{axon.hotkey}.wav')
-                sampling_rate = 32000
-                torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
-                bt.logging.info(f"Saved audio file to {output_path}")
+            output_path = os.path.join('/tmp', f'output_music_{axon.hotkey}.wav')
+            sampling_rate = 32000
+            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+            bt.logging.info(f"Saved audio file to {output_path}")
 
-                # Calculate the duration
-                duration = self.get_duration(output_path)
-                token = duration * 50.2
-                bt.logging.info(f"The duration of the audio file is {duration} seconds.")
+            # Calculate the duration
+            duration = self.get_duration(output_path)
+            token = duration * 50.2
+            bt.logging.info(f"The duration of the audio file is {duration} seconds.")
             if token < self.duration:
                 bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
                 self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
