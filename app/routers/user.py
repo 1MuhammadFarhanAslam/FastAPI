@@ -212,7 +212,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: UploadFile = File(...
             # Read the audio file and return its content
             temp_file_path = f"temp_audio_file{audio_file.filename}"  # Generate a temporary file name
             with open(temp_file_path, 'wb+') as f:
-                f.write(await audio_file.read())  # Write the contents to a temporary file
+                f.write(audio_file.read())  # Write the contents to a temporary file
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
             # Choose a VC axon randomly
