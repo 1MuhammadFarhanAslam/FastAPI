@@ -219,24 +219,26 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             uid, axon = random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
 
+            # audio_data = None  # Define audio_data outside try-except scope
+
             try:
-                # Generate voice clone
                 audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
             except Exception as e:
-                logging.error(f"Error generating voice clone: {e}")
-                raise HTTPException(status_code=500, detail="Error generating voice clone")
+                logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
+            file_extension = os.path.splitext(audio_data)[1].lower()
+            bt.logging.info(f"audio_file_path: {audio_data}")
+            # Process each audio file path as needed
 
-            # Check if audio data is a valid file path
-            if not os.path.isfile(audio_data):
-                raise HTTPException(status_code=500, detail="Generated audio file not found")
+            if file_extension not in ['.wav', '.mp3']:
+                raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
             # Set the appropriate content type based on the file extension
-            file_extension = os.path.splitext(audio_data)[1].lower()
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
             # Return the audio file
             return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
 
+            
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
             raise HTTPException(status_code=403, detail="Your subscription has expired or you do not have access to the Voice Clone service.")
