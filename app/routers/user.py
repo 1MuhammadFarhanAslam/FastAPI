@@ -222,14 +222,13 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             # audio_data = None  # Define audio_data outside try-except scope
 
             try:
-                audio_data = await vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
+                audio_data = vc_api.generate_voice_clone(prompt, input_audio, sample_rate, api_axon=[axon], input_file=temp_file_path)
                 bt.logging.info(f"audio_file_path: {audio_data}")
             except Exception as e:
                 logging.error(f"the generate_voice_clone functions is not being called due to the error with {e}")
             file_extension = os.path.splitext(audio_data)[1].lower()
-            bt.logging.info(f"audio_file_path 2nd: {audio_data}")
-            # Process each audio file path as needed
 
+            # Process each audio file path as needed
             if file_extension not in ['.wav', '.mp3']:
                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
@@ -237,7 +236,7 @@ async def vc_service(prompt: str = Form(...),  audio_file: Optional[UploadFile] 
             content_type = "audio/wav" if file_extension == '.wav' else "audio/mpeg"
 
             # Return the audio file
-            return FileResponse(path=audio_data, media_type=content_type, filename=os.path.basename(audio_data))
+            return FileResponse(path=audio_data, filename="API_cloned_5EqhXV_.wav", media_type="audio/wav")
 
             
         else:
