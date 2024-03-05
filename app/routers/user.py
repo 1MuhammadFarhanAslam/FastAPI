@@ -161,10 +161,10 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
             # Choose a TTM axon randomly
             uid, axon = random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
-            response = ttm_api.query_network([axon], request.prompt)
+            response = ttm_api.query_network(axon, request.prompt)
 
             # Process the response
-            audio_data = ttm_api.process_response([axon], response, request.prompt)
+            audio_data = ttm_api.process_response(axon, response, request.prompt)
 
             file_extension = os.path.splitext(audio_data)[1].lower()
             bt.logging.info(f"audio_file_path: {audio_data}")
