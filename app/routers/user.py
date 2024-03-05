@@ -53,34 +53,43 @@ async def change_user_password(
     try:
         # Validate that all required fields are provided
         if not username or not current_password or not new_password or not confirm_new_password:
+            bt.logging.error("All fields are required.")
             raise HTTPException(status_code=400, detail="All fields are required.")
 
         # Check if the username exists
         user = get_user(username)
         if not user:
+            bt.logging.error("User not found.")
             raise HTTPException(status_code=404, detail="User not found")
 
         # Verify the user's current password
         if not verify_user_credentials(username, current_password):
+            bt.logging.error("Invalid credentials.")
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         # Check if the new password and confirm new password match
         if new_password != confirm_new_password:
+            bt.logging.error("New password and confirm new password do not match.")
             raise HTTPException(status_code=400, detail="New password and confirm new password do not match.")
 
         # Check if the new password is different from the current password
         if current_password == new_password:
+            bt.logging.error("New password must be different from the current password.")
             raise HTTPException(status_code=400, detail="New password must be different from the current password.")
 
         # Additional validation: Check if the new password meets the specified conditions
         if not re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", new_password):
+            bt.logging.error("New password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
             raise HTTPException(status_code=400, detail="New password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")
 
         # Update the user's password
         updated_user = update_user_password(username, new_password)
         if not updated_user:
+            bt.logging.error("Failed to update password.")
             raise HTTPException(status_code=500, detail="Failed to update password.")
 
+        # Return a success message
+        bt.logging.success("Password changed successfully")
         return {"message": "Password changed successfully"}
 
     except HTTPException as e:
@@ -106,14 +115,16 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
             
             # Get filtered axons
             filtered_axons = tts_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
+                bt.logging.error("No axons available for Text-to-Speech.")
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Speech.")
 
             # Choose a TTS axon randomly
-            axon = np.random.choice(filtered_axons)
-            bt.logging.info(f"Chosen axon: {axon}")
+            uid, axon = random.choice(filtered_axons)
+            bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
 
             # Use the prompt from the request in the query_network function
             bt.logging.info(f"request prompt: {request.prompt}")
@@ -124,8 +135,15 @@ async def tts_service(request: TTSMrequest, user: User = Depends(get_current_act
             audio_data = tts_api.process_response(axon, response, request.prompt)
             bt.logging.info(f"Audio data: {audio_data}")
 
-            file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
+            try:
+                file_extension = os.path.splitext(audio_data)[1].lower()  # Extract the file extension from the path
+                bt.logging.info(f"audio_file_path: {audio_data}")
+            except:
+                bt.logging.error(f"Error processing audio file path or server unaviable for uid: {uid}")
+                raise HTTPException(status_code=404, detail=f"Error processing audio file path or server unavailable for uid: {uid}")
+            
             if file_extension not in ['.wav', '.mp3']:
+                bt.logging.error(f"Unsupported audio format.")
                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
             # Set the appropriate content type based on the file extension
@@ -156,6 +174,7 @@ async def ttm_service(request: TTSMrequest, user: User = Depends(get_current_act
 
             # Get filtered axons
             filtered_axons = ttm_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
@@ -204,21 +223,26 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str , us
     
     # Validate prompt
     if not prompt:
+        bt.logging.error(f"Prompt section cannot be empty.")
         raise HTTPException(status_code=400, detail="Prompt section cannot be empty.")
 
     # Validate audio file
     if not audio_file:
+        bt.logging.error(f"Audio file is required.")
         raise HTTPException(status_code=400, detail="Audio file is required.")
 
     if user.roles:
         role = user.roles[0]
         if user.subscription_end_time and datetime.utcnow() <= user.subscription_end_time and role.vc_enabled == 1:
             print("Congratulations! You have access to Voice Clone (VC) service.")
+
             # Get filtered axons
             filtered_axons = vc_api.get_filtered_axons()
+            bt.logging.info(f"Filtered axons: {filtered_axons}")
 
             # Check if there are axons available
             if not filtered_axons:
+                bt.logging.error(f"No axons available for Text-to-Music.")
                 raise HTTPException(status_code=500, detail="No axons available for Text-to-Music.")
 
             # Read the audio file and return its content
@@ -227,6 +251,7 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str , us
                 f.write(await audio_file.read())  # Write the contents to a temporary file
             waveform, sample_rate = torchaudio.load(temp_file_path)  
             input_audio = waveform.tolist()
+
             # Choose a VC axon randomly
             uid, axon = random.choice(filtered_axons)
             bt.logging.info(f"Chosen axon: {axon}, UID: {uid}")
@@ -240,12 +265,15 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str , us
 
             # Ensure that audio_data is defined even if an exception occurred
             if not audio_data:
-                raise HTTPException(status_code=500, detail="Voice clone audio data not generated")
+                bt.logging.error(f"Voice clone audio data not generated.")
+                raise HTTPException(status_code=404, detail="Voice clone audio data not generated")
 
             file_extension = os.path.splitext(audio_data)[1].lower()
+            bt.logging.info(f"file_extension: {file_extension}")
 
             # Process each audio file path as needed
             if file_extension not in ['.wav', '.mp3']:
+                bt.logging.error(f"Unsupported audio format for uid: {uid}")
                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
             # Return the audio file along with the UID in the response body
