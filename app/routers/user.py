@@ -324,7 +324,7 @@ async def vc_service(audio_file: Annotated[UploadFile, File()], prompt: str = Fo
                 raise HTTPException(status_code=500, detail="Unsupported audio format.")
 
             # Return the audio file along with the UID in the response body
-            return FileResponse(path=audio_data, media_type="audio/wav", filename=os.path.basename(audio_data), headers={"UID": str(uid)})
+            return FileResponse(path=audio_data, media_type="audio/wav", filename=os.path.basename(audio_data), headers={"VC-Axon-UID": str(uid)})
 
         else:
             print("You do not have access to Voice Clone service or subscription is expired.")
