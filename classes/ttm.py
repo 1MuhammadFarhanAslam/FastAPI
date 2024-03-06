@@ -117,7 +117,7 @@ class MusicGenerationService(AIModelService):
         
         responses = self.dendrite.query(
             filtered_axons,
-            lib.protocol.MusicGeneration(roles=["user"], text_input=prompt, duration=self.duration ),
+            lib.protocol.MusicGeneration(text_input=prompt, duration=self.duration ),
             deserialize=True,
             timeout=150,
         )
