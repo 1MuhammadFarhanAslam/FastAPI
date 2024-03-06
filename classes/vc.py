@@ -120,7 +120,7 @@ class VoiceCloningService(AIModelService):
             # for ax in self.filtered_axons:
             self.responses = self.dendrite.query(
                 filtered_axons,
-                lib.protocol.VoiceClone(text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
+                lib.protocol.VoiceClone(roles=["user"], text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id="name"), 
                 deserialize=True,
                 timeout=150
             )
