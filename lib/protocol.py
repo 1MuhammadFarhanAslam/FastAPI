@@ -55,7 +55,7 @@ class TextToSpeech(bt.Synapse):
         """
         Converts and returns the speech_output into a structured format, suitable for playback or further processing.
         """
-        return self.speech_output
+        return self
 
 class MusicGeneration(bt.Synapse):
     """
@@ -92,7 +92,7 @@ class MusicGeneration(bt.Synapse):
         """
         Processes and returns the music_output into a format ready for audio rendering or further analysis.
         """
-        return self.music_output
+        return self
 
 class VoiceClone(bt.Synapse):
     """
@@ -139,5 +139,5 @@ class VoiceClone(bt.Synapse):
         """
         Processes and returns the clone_output for use in auditory playback or further analysis.
         """
-        return self.clone_output
+        return self
 
