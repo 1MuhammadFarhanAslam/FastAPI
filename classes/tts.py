@@ -187,7 +187,6 @@ class TextToSpeechService(AIModelService):
 
     def process_response(self, axon, response, prompt):
         audio_file=None
-        bt.logging.info(f"Processing response from {response}")
         try:
             if response is not None and isinstance(response, lib.protocol.TextToSpeech) and response.speech_output is not None and response.dendrite.status_code == 200:
                 bt.logging.success(f"Received Text to speech output from {axon.hotkey}")
