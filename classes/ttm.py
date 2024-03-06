@@ -144,7 +144,7 @@ class MusicGenerationService(AIModelService):
                 pass
             return music_file
         except Exception as e:
-            bt.logging.error(f'An error occurred while handling music output: {e}')
+            bt.logging.error(f'An error occurred while handling speech output: {e}')
 
 
     def get_duration(self, wav_file_path):
