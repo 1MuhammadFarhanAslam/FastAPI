@@ -25,7 +25,6 @@ base58==2.1.1
 beartype==0.17.0
 bitarray==2.9.2
 bittensor==6.7.0
--e git+https://github.com/sherijigarx/ooookkkkkk.git@3aac177b5cb6470595ff780e8d097053f7dd29c0#egg=bittensor_subnet_lib
 black==23.7.0
 blinker==1.7.0
 blis==0.7.11
