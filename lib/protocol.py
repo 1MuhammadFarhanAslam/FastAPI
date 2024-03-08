@@ -70,7 +70,7 @@ class MusicGeneration(bt.Synapse):
     text_input: str = Field(
         default=None,
         title="Text Input",
-        description="Textual directives or descriptions intended to guide the music generation process."
+        description="Textual directives or descriptions intended to guide the music generation process.500K Music prompt dataset is loaded on the HF repo etechgrid/prompts_for_TTM, which is used randomlyfor sending requests to miners by validators"
     )
     model_name: Optional[str] = Field(
         default=None,
@@ -107,12 +107,12 @@ class VoiceClone(bt.Synapse):
     text_input: str = Field(
         default=None,
         title="Text Input",
-        description="Text content to be synthesized using cloned voice attributes."
+        description="Text content to be synthesized using cloned voice attributes. The text is used from HuggingFace repo etechgrid/Prompts_for_Voice_cloning_and_TTS"
     )
     clone_input: List = Field(
         default=None,
         title="Clone Input",
-        description="Data used for analyzing and replicating the desired voice characteristics, an audio array constructed from mp3 or wav files."
+        description="Data used for analyzing and replicating the desired voice characteristics, an audio array constructed from mp3 or wav files.163 uniqe speakers lataset is uploaded on the following repo etechgrid/28.5k_wavfiles_dataset , which will use 1 Million unique  prompts for voice clonning"
     )
     clone_output: List = Field(
         default=None,
