@@ -244,6 +244,8 @@ class TextToSpeechService(AIModelService):
             bt.logging.info(f"Saved audio file to {output_path}")
             print(f"Saved audio file to {output_path}")
 
+            # wandb.log({"whale songs": wandb.Audio(audio_data_int , caption="OooOoo", sample_rate=sampling_rate)})
+
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
