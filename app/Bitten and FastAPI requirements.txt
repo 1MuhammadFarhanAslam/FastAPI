@@ -28,7 +28,7 @@ beartype==0.17.0
 bitarray==2.9.2
 bittensor==6.7.0
 -e git+https://github.com/1MuhammadFarhanAslam/FastAPI.git@dc9acb593fa44f7ece23a5282c8563ac02ce0902#egg=bittensor_subnet_lib
-black==23.7.0
+black==24.3.0
 blinker==1.7.0
 blis==0.7.11
 bnnumerizer==0.0.2
